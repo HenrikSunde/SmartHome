@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="970.0" style="-fx-background-color: lightgray;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.CAServerController">
+   <top>
+      <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="500.0" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets bottom="20.0" left="5.0" right="5.0" top="5.0" />
+         </BorderPane.margin>
+         <children>
+            <Label alignment="CENTER" text="CA SERVER ADMINISTRATION" textAlignment="CENTER">
+               <font>
+                  <Font name="Arial" size="28.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+   </top>
+   <left>
+      <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="270.0" style="-fx-border-color: black; -fx-background-color: white; -fx-font-size: 18px;" BorderPane.alignment="TOP_LEFT">
+         <BorderPane.margin>
+            <Insets left="5.0" />
+         </BorderPane.margin>
+         <children>
+            <Label alignment="TOP_CENTER" contentDisplay="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="30.0" prefWidth="268.0" text="Pending requests" textAlignment="CENTER" />
+            <ScrollPane fx:id="pending_requests_scrollPane" hbarPolicy="NEVER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="418.0" prefWidth="268.0" vbarPolicy="ALWAYS">
+               <content>
+                  <VBox fx:id="pending_requests" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minHeight="416.0" minWidth="-Infinity" prefWidth="246.0" />
+               </content>
+            </ScrollPane>
+         </children>
+      </VBox>
+   </left>
+   <bottom>
+      <HBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="20.0" />
+         </BorderPane.margin>
+         <children>
+            <Button fx:id="start_server_button" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStartServerButtonClick" prefHeight="50.0" prefWidth="150.0" text="Start server" textAlignment="CENTER">
+               <font>
+                  <Font size="22.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="270.0" />
+               </HBox.margin>
+            </Button>
+            <Button fx:id="stop_server_button" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStopServerButtonClick" prefHeight="50.0" prefWidth="150.0" text="Stop server" textAlignment="CENTER">
+               <font>
+                  <Font size="22.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="120.0" />
+               </HBox.margin>
+            </Button>
+            <Label fx:id="version" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="13.0" prefWidth="62.0" text="Version 1.0" textAlignment="CENTER">
+               <font>
+                  <Font size="9.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="206.0" top="45.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+   </bottom>
+   <right>
+      <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="270.0" style="-fx-border-color: black; -fx-background-color: white;" BorderPane.alignment="TOP_RIGHT">
+         <BorderPane.margin>
+            <Insets right="5.0" />
+         </BorderPane.margin>
+         <children>
+            <Label alignment="TOP_CENTER" contentDisplay="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="30.0" prefWidth="268.0" style="-fx-font-size: 18px;" text="Log" textAlignment="CENTER" />
+            <ScrollPane fx:id="log_messages_scrollPane" hbarPolicy="NEVER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="418.0" prefWidth="268.0" vbarPolicy="ALWAYS">
+               <content>
+                  <VBox fx:id="log_messages" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minHeight="416.0" minWidth="-Infinity" prefWidth="246.0" />
+               </content>
+            </ScrollPane>
+         </children>
+      </VBox>
+   </right>
+   <center>
+      <VBox fx:id="certificate_signing_request" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" opacity="0.0" prefHeight="450.0" prefWidth="380.0" style="-fx-background-image: url('../res/certificate.png');" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets />
+         </BorderPane.margin>
+         <children>
+            <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="378.0" text="Certificate Signing Request" textAlignment="CENTER">
+               <font>
+                  <Font name="Sitka Heading" size="22.0" />
+               </font>
+               <VBox.margin>
+                  <Insets top="40.0" />
+               </VBox.margin>
+            </Label>
+            <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="378.0" text="for" textAlignment="CENTER">
+               <font>
+                  <Font name="Sitka Text" size="16.0" />
+               </font>
+               <VBox.margin>
+                  <Insets top="20.0" />
+               </VBox.margin>
+            </Label>
+            <Label fx:id="client_identity" alignment="CENTER" contentDisplay="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="35.0" prefWidth="270.0" textAlignment="CENTER">
+               <VBox.margin>
+                  <Insets left="54.0" top="40.0" />
+               </VBox.margin>
+               <font>
+                  <Font size="22.0" />
+               </font>
+            </Label>
+            <Button fx:id="sign_certifficate_button" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="39.0" prefWidth="142.0" text="Sign certificate">
+               <VBox.margin>
+                  <Insets left="118.0" right="118.0" top="40.0" />
+               </VBox.margin>
+            </Button>
+            <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="378.0">
+               <VBox.margin>
+                  <Insets top="53.0" />
+               </VBox.margin>
+               <children>
+                  <Label maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="92.0" text="Request made:">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets left="55.0" />
+                     </HBox.margin>
+                  </Label>
+                  <Label id="request_date">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </Label>
+               </children>
+            </HBox>
+            <Button fx:id="delete_request_button" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="25.0" prefWidth="94.0" text="Delete request">
+               <font>
+                  <Font size="12.0" />
+               </font>
+               <VBox.margin>
+                  <Insets left="234.0" top="15.0" />
+               </VBox.margin>
+            </Button>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

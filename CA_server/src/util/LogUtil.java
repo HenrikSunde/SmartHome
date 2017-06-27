@@ -1,5 +1,7 @@
 package util;
 
+import constant.Filepath;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -7,18 +9,18 @@ import java.util.Date;
 /**
  *
  */
-public class Log
+public class LogUtil
 {
-    private final File logFile = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "log");
+    private final File logFile = new File(Filepath.LOG);
     private String tag;
-    private SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss.SSS");
+    private SimpleDateFormat timeFormat = new SimpleDateFormat("dd.MM.yyyy-HH:mm:ss.SSS");
     
     /**
      * Initializes this Log object with the specified tag.
      *
      * @param tag This object will log all messages with this tag.
      */
-    public Log(String tag)
+    public LogUtil(String tag)
     {
         this.tag = tag;
     }
@@ -32,6 +34,6 @@ public class Log
     {
         String time = timeFormat.format(new Date());
         String logMessage = time + "   " + tag + " - " + message;
-        FileWriterUtil.appendString(logMessage, logFile);
+        FileWriterUtil.appendString(logMessage, true, logFile);
     }
 }
