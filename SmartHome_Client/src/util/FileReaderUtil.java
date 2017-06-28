@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 /**
  *
@@ -72,5 +73,10 @@ public class FileReaderUtil
             return null;
         }
         return bytes;
+    }
+
+    public static String readString(File location)
+    {
+        return new String(readBytes(location), Charset.forName("UTF-8"));
     }
 }

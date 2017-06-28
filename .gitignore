@@ -2,6 +2,7 @@ JavaDoc/
 /**/workspace.xml
 /**/out/
 /**/dictionaries/
-/CA_server/.idea/libraries/Arquillian_JUnit_Release.xml
 /CA_server/Security/
 /CA_server/Log/
+/SmartHome_Client/Security/
+/SmartHome_Client/Log/

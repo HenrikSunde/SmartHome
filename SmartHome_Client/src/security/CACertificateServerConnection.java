@@ -1,10 +1,7 @@
 package security;
 
 import constant.Filepath;
-import util.CloseableUtil;
-import util.CryptographyGenerator;
-import util.LogUtil;
-import util.SocketToFileStreamUtil;
+import util.*;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -61,30 +58,29 @@ public class CACertificateServerConnection extends Thread
                 log.i("Storing the self-signed certificate in the KeyStore...");
                 keyStore.setCertificateEntry(alias, selfSignedCert);
 
+                //------------------------------------------------------------------
+
+                log.i("Connecting to the CA to receive its root certificate...");
+                Socket socket = new Socket(HOST_IP, PORT);
+                DataInputStream socketIn = new DataInputStream(socket.getInputStream());
+
+                log.i("Receiving root certificate...");
+                SocketToFileStreamUtil.doStream(socketIn, rootCertFile);
+
+                log.i("Closing data streams to the CA...");
+                CloseableUtil.close(socketIn, socket);
+
+                keyStore.setCertificateEntry("SmartHomeCA", CryptographyGenerator.stringToCertificate(FileReaderUtil.readString(rootCertFile)));
+
+                //-------------------------------------------------------------------
+
                 FileOutputStream keystoreOut = new FileOutputStream(keystoreFile);
                 keyStore.store(keystoreOut, keystorePassword.toCharArray());
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                log.i("Exception caught. Message: " + e.getMessage());
             }
-        }
-
-        try
-        {
-            log.i("Connecting to the CA to receive its root certificate...");
-            Socket socket = new Socket(HOST_IP, PORT);
-            DataInputStream socketIn = new DataInputStream(socket.getInputStream());
-
-            log.i("Receiving root certificate...");
-            SocketToFileStreamUtil.doStream(socketIn, rootCertFile);
-
-            log.i("Closing data streams to the CA...");
-            CloseableUtil.close(socketIn, socket);
-        }
-        catch (Exception e)
-        {
-            log.i("Exception caught. Message: " + e.getMessage());
         }
     }
 }

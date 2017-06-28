@@ -3,6 +3,7 @@ package util;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
@@ -69,13 +70,14 @@ public class CryptographyGenerator
         return writer.toString();
     }
     
-    public static X509Certificate stringToCertificate(String certString) throws IOException
+    public static X509Certificate stringToCertificate(String certString) throws IOException, CertificateException
     {
         StringReader reader = new StringReader(certString);
         PEMParser pemParser = new PEMParser(reader);
         Object obj = pemParser.readObject();
         pemParser.close();
-        return (X509Certificate) obj;
+        JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter().setProvider("BC");
+        return certConverter.getCertificate((X509CertificateHolder) obj);
     }
     
     
