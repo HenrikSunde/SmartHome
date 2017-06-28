@@ -12,7 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 
-public class ClientConnection extends Thread
+public class CAClientConnection extends Thread
 {
     private SSLSocket connection;
     private DataInputStream connectionIn;
@@ -24,7 +24,7 @@ public class ClientConnection extends Thread
     private LogUtil log;
     public final CountDownLatch latch = new CountDownLatch(1);
     
-    public ClientConnection(SSLSocket connection, CAServerControllerCallback callback)
+    public CAClientConnection(SSLSocket connection, CAServerControllerCallback callback)
     {
         log = new LogUtil(TAG);
         connectTime = new SimpleDateFormat("dd.MM.yyyy - HH:mm:ss").format(new Date());

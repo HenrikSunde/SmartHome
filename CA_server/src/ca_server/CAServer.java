@@ -2,21 +2,16 @@ package ca_server;
 
 import callback.CAServerControllerCallback;
 import constant.Filepath;
-import constant.SysProp;
 import controller.CAServerController;
 import javafx.application.Platform;
 import util.CloseableUtil;
-import util.FileReaderUtil;
 import util.LogUtil;
 
 import javax.net.ssl.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.SocketException;
-import java.nio.charset.Charset;
-import java.security.KeyPair;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 public class CAServer extends Thread
@@ -63,7 +58,7 @@ public class CAServer extends Thread
             {
                 log("Accepting new client connections...");
                 SSLSocket connection = (SSLSocket) sslServer.accept();
-                new ClientConnection(connection, callback).start();
+                new CAClientConnection(connection, callback).start();
             }
         }
         catch (SocketException e) {}

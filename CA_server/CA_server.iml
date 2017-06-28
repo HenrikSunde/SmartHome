@@ -8,6 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Arquillian JUnit:Release" level="project" />
-    <orderEntry type="library" name="Bouncy Castle" level="project" />
+    <orderEntry type="library" name="Bouncy Castle" level="application" />
   </component>
 </module>

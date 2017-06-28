@@ -5,6 +5,7 @@ import util.LogUtil;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class CACertificateServer extends Thread
 {
@@ -28,9 +29,13 @@ public class CACertificateServer extends Thread
                 new CACertificateClientConnection(connection).start();
             }
         }
+        catch (SocketException e)
+        {
+            log.i("Server stopped, non fatal SocketException caught. Message: " + e.getMessage());
+        }
         catch (Exception e)
         {
-            log.i(e.getMessage());
+            log.i("Exception caught. Message: " + e.getMessage());
         }
     }
     
