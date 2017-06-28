@@ -12,6 +12,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ *
+ * */
 public class CAClientConnection extends Thread
 {
     private SSLSocket connection;

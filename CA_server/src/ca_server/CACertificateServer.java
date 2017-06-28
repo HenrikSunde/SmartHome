@@ -3,39 +3,49 @@ package ca_server;
 import util.CloseableUtil;
 import util.LogUtil;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 
+/**
+ * This is the server that will listen for clients requesting the root certificate.
+ * */
 public class CACertificateServer extends Thread
 {
     private LogUtil log = new LogUtil(getClass().getSimpleName());
     private final int PORT = 24575;
     private ServerSocket serverSocket;
     
+    /**
+     * Will listen for new clients as long as the thread is uninterrupted.
+     * Clients connected will have their connection handled in a new thread.
+     * */
     @Override
     public void run()
     {
+        log.i("STARTED");
         try
         {
-            log.i("STARTED");
             serverSocket = new ServerSocket(PORT);
+        }
+        catch (IOException e)
+        {
+            log.i("IOException caught. Message: " + e.getMessage());
+        }
     
-            log.i("Accepting new client connections...");
-            while (!isInterrupted())
+        log.i("Accepting new client connections...");
+        while (!isInterrupted())
+        {
+            try
             {
                 Socket connection = serverSocket.accept();
                 log.i("Client connected");
                 new CACertificateClientConnection(connection).start();
             }
-        }
-        catch (SocketException e)
-        {
-            log.i("Server stopped, non fatal SocketException caught. Message: " + e.getMessage());
-        }
-        catch (Exception e)
-        {
-            log.i("Exception caught. Message: " + e.getMessage());
+            catch (IOException e)
+            {
+                log.i("IOException caught. Message: " + e.getMessage());
+            }
         }
     }
     
