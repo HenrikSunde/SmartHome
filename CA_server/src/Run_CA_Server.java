@@ -1,4 +1,3 @@
-import ca_server.CACertificateServer;
 import constant.Filepath;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -20,7 +19,8 @@ public class Run_CA_Server extends Application
         new File(Filepath.LOG_DIR).mkdirs();
         new File(Filepath.SECURITY_DIR).mkdirs();
         new File(Filepath.TEMP_CERTS_DIR).mkdirs();
-        
+
+        // Launch the GUI
         launch(args);
     }
     

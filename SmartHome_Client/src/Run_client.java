@@ -2,12 +2,20 @@ import constant.Filepath;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import security.CACertificateServerConnection;
 import security.CAServerConnection;
+import util.LogUtil;
 
 import java.io.File;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
+import java.security.cert.CertificateException;
 
 public class Run_client
 {
+    private static LogUtil log = new LogUtil("Run_client Main class");
+
     public static void main(String[] args)
     {
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
@@ -15,16 +23,30 @@ public class Run_client
         new File(Filepath.LOG_DIR).mkdirs();
         new File(Filepath.SECURITY_DIR).mkdirs();
 
-        // Connect to the CA server explicitly for receiving its root certificate
-        CACertificateServerConnection certificateServerConnection = new CACertificateServerConnection("SmartHomeClient1");
-        certificateServerConnection.start();
-        try
+        File keystoreFile = new File(Filepath.KEYSTORE);
+        String keystorePassword = "123456";
+
+        if (keystoreFile.exists())
         {
-            certificateServerConnection.join();
+            log.i("A KeyStore already exists");
         }
-        catch (InterruptedException e)
+        else
         {
-            e.printStackTrace();
+            log.i("Creating new KeyStore...");
+
+            try
+            {
+                KeyStore keyStore = setUpKeystore(keystorePassword);
+
+                // Connect to the CA server explicitly for receiving its root certificate
+                CACertificateServerConnection certificateServerConnection = new CACertificateServerConnection("SmartHomeClient", keystorePassword, keyStore);
+                certificateServerConnection.start();
+                certificateServerConnection.join();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
 
         // Connect to the CA server explicitly to send a CSR and receive a signed certificate
@@ -38,5 +60,14 @@ public class Run_client
         {
             e.printStackTrace();
         }
+    }
+
+    private static KeyStore setUpKeystore(String keystorePassword) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException
+    {
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        keyStore.load(null, keystorePassword.toCharArray());
+
+
+        return keyStore;
     }
 }

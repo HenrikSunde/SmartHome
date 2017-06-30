@@ -69,7 +69,10 @@ public class CAServerController implements Initializable, CAServerControllerCall
     private String CN = "SmartHome";
     private int validYears = 50;
     private String alias = "SmartHomeCA";
-    
+
+    /**
+     * This method is called when the user clicks the Start Server button.
+     * */
     @FXML
     void onStartServerButtonClick(ActionEvent event)
     {
@@ -87,7 +90,10 @@ public class CAServerController implements Initializable, CAServerControllerCall
 
 //        certificate_signing_request.setOpacity(1);
     }
-    
+
+    /**
+     * This method is called when the user clicks the Stop Server button.
+     * */
     @FXML
     void onStopServerButtonClick(ActionEvent event)
     {
@@ -99,7 +105,10 @@ public class CAServerController implements Initializable, CAServerControllerCall
 
 //        certificate_signing_request.setOpacity(0);
     }
-    
+
+    /**
+     * This method is called automatically at the initialization of the GUI.
+     * */
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
@@ -111,19 +120,28 @@ public class CAServerController implements Initializable, CAServerControllerCall
         log_messages_scrollPane.vvalueProperty().bind(log_messages.heightProperty());
         pending_requests_scrollPane.vvalueProperty().bind(pending_requests.heightProperty());
     }
-    
+
+    /**
+     * Add a log message to the log panel in the GUI
+     * */
     @Override
     public void addLogMessage(String logMessage)
     {
         log_messages.getChildren().add(new Label(logMessage));
     }
-    
+
+    /**
+     * Logging should be done both in the log panel and a log file.
+     * */
     private void log(String logMessage)
     {
         log.i(logMessage);
         addLogMessage(logMessage);
     }
-    
+
+    /**
+     * This method is called from the CAClientConnection class when a client has connected and sent its CSR
+     * */
     @Override
     public void clientConnected(String clientID, String connectTime, CountDownLatch latch)
     {
@@ -144,7 +162,11 @@ public class CAServerController implements Initializable, CAServerControllerCall
         
         pending_requests.getChildren().add(client_VBox);
     }
-    
+
+    /**
+     * Set up the keystore that will be used to communicate securely with the clients of the CAServer.
+     * The root certificate will be made here, and exported to a file that is ready to be sent to clients.
+     * */
     private boolean setUpKeystore()
     {
         if (keystoreFile.exists() && rootCertFile.exists())
@@ -166,7 +188,7 @@ public class CAServerController implements Initializable, CAServerControllerCall
                 //Cryptography
                 //------------------------------------------------------------------------------------------------------
                 log("Generating RSA keypair...");
-                KeyPair keyPair = CryptographyGenerator.generateRSAKeyPair(keySize);
+                KeyPair keyPair = CryptographyGenerator.generateRSAKeyPair();
                 
                 log("Generating self-signed certificate...");
                 X509Certificate selfSignedCert = CryptographyGenerator.generateSelfSignedCert(CN, validYears, keyPair);
