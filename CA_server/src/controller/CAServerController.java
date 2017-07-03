@@ -87,8 +87,6 @@ public class CAServerController implements Initializable, CAServerControllerCall
             caServer = new CAServer(this, keystorePassword);
             caServer.start();
         }
-
-//        certificate_signing_request.setOpacity(1);
     }
 
     /**
@@ -102,8 +100,6 @@ public class CAServerController implements Initializable, CAServerControllerCall
         
         caCertificateServer.interrupt();
         caServer.interrupt();
-
-//        certificate_signing_request.setOpacity(0);
     }
 
     /**

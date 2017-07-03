@@ -2,14 +2,13 @@ import constant.Filepath;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import security.CACertificateServerConnection;
 import security.CAServerConnection;
+import util.CryptographyGenerator;
 import util.LogUtil;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Security;
+import java.security.*;
 import java.security.cert.CertificateException;
 
 public class Run_client
@@ -26,6 +25,8 @@ public class Run_client
         File keystoreFile = new File(Filepath.KEYSTORE);
         String keystorePassword = "123456";
 
+        String host_ip = "localhost";
+
         if (keystoreFile.exists())
         {
             log.i("A KeyStore already exists");
@@ -36,10 +37,10 @@ public class Run_client
 
             try
             {
-                KeyStore keyStore = setUpKeystore(keystorePassword);
+                setUpKeystore(keystorePassword);
 
                 // Connect to the CA server explicitly for receiving its root certificate
-                CACertificateServerConnection certificateServerConnection = new CACertificateServerConnection("SmartHomeClient", keystorePassword, keyStore);
+                CACertificateServerConnection certificateServerConnection = new CACertificateServerConnection("SmartHomeClient", keystorePassword, host_ip);
                 certificateServerConnection.start();
                 certificateServerConnection.join();
             }
@@ -50,7 +51,7 @@ public class Run_client
         }
 
         // Connect to the CA server explicitly to send a CSR and receive a signed certificate
-        CAServerConnection caServerConnection = new CAServerConnection();
+        CAServerConnection caServerConnection = new CAServerConnection(keystorePassword, host_ip);
         caServerConnection.start();
         try
         {
@@ -62,12 +63,24 @@ public class Run_client
         }
     }
 
-    private static KeyStore setUpKeystore(String keystorePassword) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException
+    private static void setUpKeystore(String keystorePassword) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, NoSuchProviderException
     {
         KeyStore keyStore = KeyStore.getInstance("JKS");
         keyStore.load(null, keystorePassword.toCharArray());
 
+        log.i("Generating RSA keypair...");
+        KeyPair keyPair = CryptographyGenerator.generateRSAKeyPair();
 
-        return keyStore;
+        /*
+        TODO: This might not be necessary
+        log.i("Generating self-signed certificate...");
+        X509Certificate selfSignedCert = CryptographyGenerator.generateSelfSignedCert(CN, validYears, keyPair);
+
+        log.i("Storing the self-signed certificate in the KeyStore...");
+        keyStore.setCertificateEntry(alias, selfSignedCert);
+        */
+
+        FileOutputStream keystoreOut = new FileOutputStream(Filepath.KEYSTORE);
+        keyStore.store(keystoreOut, keystorePassword.toCharArray());
     }
 }

@@ -2,6 +2,7 @@ package ca_server;
 
 import callback.CAServerControllerCallback;
 import javafx.application.Platform;
+import util.CloseableUtil;
 import util.LogUtil;
 import util.SocketReaderUtil;
 
@@ -53,7 +54,7 @@ public class CAClientConnection extends Thread
         {
             connection.setUseClientMode(false);
             connection.setNeedClientAuth(false); // The client should have the CA's certificate.
-            connection.setEnabledCipherSuites(connection.getEnabledCipherSuites());
+            connection.setEnabledCipherSuites(connection.getSupportedCipherSuites());
             connection.startHandshake();
     
             connectionIn = new DataInputStream(connection.getInputStream());
@@ -72,7 +73,14 @@ public class CAClientConnection extends Thread
             //Code...
             System.out.println("CSR signing in process...");
         }
-        catch (Exception e) {}
+        catch (Exception e)
+        {
+            log("Exception caught. Message: " + e.getMessage());
+        }
+        finally
+        {
+            CloseableUtil.close(connectionIn, connectionOut, connection);
+        }
     }
 
     /**

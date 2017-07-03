@@ -3,6 +3,7 @@ package util;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -11,10 +12,13 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
+import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 
 import javax.security.auth.x500.X500Principal;
@@ -66,9 +70,17 @@ public class CryptographyGenerator
         return requestBuilder.build(signer);
     }
 
-    public static X509Certificate signCSR(X509Certificate rootCert, PKCS10CertificationRequestBuilder csr)
+    public static X509Certificate signCSR(PrivateKey privateKey, X509Certificate rootCert, JcaPKCS10CertificationRequest csr) throws NoSuchAlgorithmException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException, SignatureException
     {
-        return null;
+        BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
+        AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSA");
+        AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
+        JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(rootCert, serial, rootCert.getNotBefore(), rootCert.getNotAfter(), csr.getSubject(), csr.getPublicKey());
+        ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(privateKey);
+        X509CertificateHolder holder = certBuilder.build(signer);
+        X509Certificate signedCert = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(holder);
+        signedCert.verify(rootCert.getPublicKey());
+        return signedCert;
     }
 
     public static String certificateToString(X509Certificate certificate) throws IOException

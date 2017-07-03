@@ -23,8 +23,7 @@ public class CACertificateServerConnection extends Thread
     private LogUtil log = new LogUtil(getClass().getSimpleName());
     private File keystoreFile = new File(Filepath.KEYSTORE);
     private File rootCertFile = new File(Filepath.ROOT_CERT);
-    private KeyStore keyStore;
-    private final String HOST_IP = "localhost";
+    private String host_ip;
     private final int PORT = 24575;
 
     // Temporary set values
@@ -37,11 +36,11 @@ public class CACertificateServerConnection extends Thread
     /**
      * Constructor
      * */
-    public CACertificateServerConnection(String alias, String keystorePassword, KeyStore keyStore)
+    public CACertificateServerConnection(String alias, String keystorePassword, String host_ip)
     {
         this.alias = alias;
         this.keystorePassword = keystorePassword;
-        this.keyStore = keyStore;
+        this.host_ip = host_ip;
     }
 
     /**
@@ -53,8 +52,12 @@ public class CACertificateServerConnection extends Thread
     {
         try
         {
+            FileInputStream keystoreIn = new FileInputStream(Filepath.KEYSTORE);
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(keystoreIn, keystorePassword.toCharArray());
+
             log.i("Connecting to the CA to receive its root certificate...");
-            Socket socket = new Socket(HOST_IP, PORT);
+            Socket socket = new Socket(host_ip, PORT);
             DataInputStream socketIn = new DataInputStream(socket.getInputStream());
 
             log.i("Receiving root certificate...");
@@ -72,19 +75,5 @@ public class CACertificateServerConnection extends Thread
         {
             log.i("Exception caught. Message: " + e.getMessage());
         }
-    }
-
-    private void setUpKeystore() throws NoSuchProviderException, NoSuchAlgorithmException
-    {
-        log.i("Generating RSA keypair...");
-        KeyPair keyPair = CryptographyGenerator.generateRSAKeyPair();
-
-        /* TODO: This might not be necessary
-        log.i("Generating self-signed certificate...");
-        X509Certificate selfSignedCert = CryptographyGenerator.generateSelfSignedCert(CN, validYears, keyPair);
-
-        log.i("Storing the self-signed certificate in the KeyStore...");
-        keyStore.setCertificateEntry(alias, selfSignedCert);
-        */
     }
 }
