@@ -73,16 +73,20 @@ public class CAServer extends Thread
         // Start a new thread for handling a client that connects
         try
         {
+            log("Accepting new client connections...");
             while (!isInterrupted())
             {
-                log("Accepting new client connections...");
                 SSLSocket connection = (SSLSocket) sslServer.accept();
+                log("Client connected " + connection.getInetAddress());
                 new CAClientConnection(connection, callback).start();
             }
         }
         catch (Exception e)
         {
-            log("Exception caught. Message: " + e.getMessage());
+            if (!e.getMessage().equals("socket closed"))
+            {
+                log("Exception caught. Message: " + e.getMessage());
+            }
         }
     }
 

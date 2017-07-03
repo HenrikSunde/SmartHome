@@ -53,7 +53,7 @@ public class CAClientConnection extends Thread
         try
         {
             connection.setUseClientMode(false);
-            connection.setNeedClientAuth(false); // The client should have the CA's certificate.
+            connection.setNeedClientAuth(false);
             connection.setEnabledCipherSuites(connection.getSupportedCipherSuites());
             connection.startHandshake();
     
@@ -79,7 +79,7 @@ public class CAClientConnection extends Thread
         }
         finally
         {
-            CloseableUtil.close(connectionIn, connectionOut, connection);
+            CloseableUtil.close(connection);
         }
     }
 

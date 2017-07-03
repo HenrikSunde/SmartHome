@@ -39,13 +39,15 @@ public class CACertificateServer extends Thread
             while (!isInterrupted())
             {
                 Socket connection = serverSocket.accept();
-                log.i("Client connected");
                 new CACertificateClientConnection(connection).start();
             }
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            log.i("IOException caught. Message: " + e.getMessage());
+            if (!e.getMessage().equals("socket closed"))
+            {
+                log.i("Exception caught. Message: " + e.getMessage());
+            }
         }
     }
 

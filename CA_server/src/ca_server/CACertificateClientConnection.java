@@ -52,7 +52,7 @@ public class CACertificateClientConnection extends Thread
         finally
         {
             // Close stream and socket connection
-            CloseableUtil.close(connectionOut, connection);
+            CloseableUtil.close(connection);
         }
     }
 }

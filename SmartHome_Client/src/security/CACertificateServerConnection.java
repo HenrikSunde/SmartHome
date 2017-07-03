@@ -21,24 +21,24 @@ import java.security.cert.X509Certificate;
 public class CACertificateServerConnection extends Thread
 {
     private LogUtil log = new LogUtil(getClass().getSimpleName());
-    private File keystoreFile = new File(Filepath.KEYSTORE);
     private File rootCertFile = new File(Filepath.ROOT_CERT);
     private String host_ip;
     private final int PORT = 24575;
+
+    private Socket connection;
+    private DataInputStream connectionIn;
 
     // Temporary set values
     private String keystorePassword;
     private int keySize = 2048;
     private String CN = "SmartHome";
     private int validYears = 25;
-    private String alias;
 
     /**
      * Constructor
      * */
-    public CACertificateServerConnection(String alias, String keystorePassword, String host_ip)
+    public CACertificateServerConnection(String keystorePassword, String host_ip)
     {
-        this.alias = alias;
         this.keystorePassword = keystorePassword;
         this.host_ip = host_ip;
     }
@@ -57,23 +57,28 @@ public class CACertificateServerConnection extends Thread
             keyStore.load(keystoreIn, keystorePassword.toCharArray());
 
             log.i("Connecting to the CA to receive its root certificate...");
-            Socket socket = new Socket(host_ip, PORT);
-            DataInputStream socketIn = new DataInputStream(socket.getInputStream());
+            connection = new Socket(host_ip, PORT);
+            connectionIn = new DataInputStream(connection.getInputStream());
 
             log.i("Receiving root certificate...");
-            SocketToFileStreamUtil.doStream(socketIn, rootCertFile);
+            SocketToFileStreamUtil.doStream(connectionIn, rootCertFile);
 
-            log.i("Closing data streams to the CA...");
-            CloseableUtil.close(socketIn, socket);
-
+            log.i("Importing root certificate to keystore...");
             keyStore.setCertificateEntry("SmartHomeCA", CryptographyGenerator.stringToCertificate(FileReaderUtil.readString(rootCertFile)));
 
-            FileOutputStream keystoreOut = new FileOutputStream(keystoreFile);
+            FileOutputStream keystoreOut = new FileOutputStream(Filepath.KEYSTORE);
             keyStore.store(keystoreOut, keystorePassword.toCharArray());
+
+            FileUtil.delete(rootCertFile);
         }
         catch (Exception e)
         {
             log.i("Exception caught. Message: " + e.getMessage());
+        }
+        finally
+        {
+            log.i("Closing data streams to the CA...");
+            CloseableUtil.close(connection);
         }
     }
 }

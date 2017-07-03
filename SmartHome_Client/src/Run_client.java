@@ -40,26 +40,19 @@ public class Run_client
                 setUpKeystore(keystorePassword);
 
                 // Connect to the CA server explicitly for receiving its root certificate
-                CACertificateServerConnection certificateServerConnection = new CACertificateServerConnection("SmartHomeClient", keystorePassword, host_ip);
+                CACertificateServerConnection certificateServerConnection = new CACertificateServerConnection(keystorePassword, host_ip);
                 certificateServerConnection.start();
                 certificateServerConnection.join();
+
+                // Connect to the CA server explicitly to send a CSR and receive a signed certificate
+                CAServerConnection caServerConnection = new CAServerConnection(keystorePassword, host_ip);
+                caServerConnection.start();
+                caServerConnection.join();
             }
             catch (Exception e)
             {
                 e.printStackTrace();
             }
-        }
-
-        // Connect to the CA server explicitly to send a CSR and receive a signed certificate
-        CAServerConnection caServerConnection = new CAServerConnection(keystorePassword, host_ip);
-        caServerConnection.start();
-        try
-        {
-            caServerConnection.join();
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
         }
     }
 
@@ -67,18 +60,6 @@ public class Run_client
     {
         KeyStore keyStore = KeyStore.getInstance("JKS");
         keyStore.load(null, keystorePassword.toCharArray());
-
-        log.i("Generating RSA keypair...");
-        KeyPair keyPair = CryptographyGenerator.generateRSAKeyPair();
-
-        /*
-        TODO: This might not be necessary
-        log.i("Generating self-signed certificate...");
-        X509Certificate selfSignedCert = CryptographyGenerator.generateSelfSignedCert(CN, validYears, keyPair);
-
-        log.i("Storing the self-signed certificate in the KeyStore...");
-        keyStore.setCertificateEntry(alias, selfSignedCert);
-        */
 
         FileOutputStream keystoreOut = new FileOutputStream(Filepath.KEYSTORE);
         keyStore.store(keystoreOut, keystorePassword.toCharArray());

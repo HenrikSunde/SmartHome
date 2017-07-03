@@ -46,6 +46,7 @@ public class CAServerConnection extends Thread
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 
+            log.i("Connecting to the CA to send a CSR and receive a signed certificate...");
             SSLSocketFactory sf = sslContext.getSocketFactory();
             connection = (SSLSocket) sf.createSocket(host_ip, PORT);
 
@@ -56,6 +57,7 @@ public class CAServerConnection extends Thread
             connectionIn = new DataInputStream(connection.getInputStream());
             connectionOut = new DataOutputStream(connection.getOutputStream());
 
+            log.i("Sending my client ID to the server...");
             SocketWriterUtil.writeString("TestClient1", connectionOut);
         }
         catch (Exception e)
@@ -64,7 +66,7 @@ public class CAServerConnection extends Thread
         }
         finally
         {
-            CloseableUtil.close(connectionIn, connectionOut, connection);
+            CloseableUtil.close(connection);
         }
     }
 }
