@@ -66,7 +66,7 @@ public class CryptographyGenerator
         return requestBuilder.build(signer);
     }
 
-    public static X509Certificate signCSR()
+    public static X509Certificate signCSR(X509Certificate rootCert, PKCS10CertificationRequestBuilder csr)
     {
         return null;
     }
