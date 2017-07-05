@@ -193,7 +193,7 @@ public class CAServerController implements Initializable, CAServerControllerCall
                 keyStore.setCertificateEntry(alias, selfSignedCert);
                 
                 log("Exporting the self-signed certificate to a file...");
-                String rootCertString = CryptographyGenerator.certificateToString(selfSignedCert);
+                String rootCertString = CryptographyGenerator.pemObjectToString(selfSignedCert);
                 FileWriterUtil.writeString(rootCertString, false, rootCertFile);
                 //------------------------------------------------------------------------------------------------------
                 

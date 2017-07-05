@@ -37,8 +37,6 @@ public class Run_client
 
             try
             {
-                setUpKeystore(keystorePassword);
-
                 // Connect to the CA server explicitly for receiving its root certificate
                 CACertificateServerConnection certificateServerConnection = new CACertificateServerConnection(keystorePassword, host_ip);
                 certificateServerConnection.start();
@@ -54,14 +52,5 @@ public class Run_client
                 e.printStackTrace();
             }
         }
-    }
-
-    private static void setUpKeystore(String keystorePassword) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, NoSuchProviderException
-    {
-        KeyStore keyStore = KeyStore.getInstance("JKS");
-        keyStore.load(null, keystorePassword.toCharArray());
-
-        FileOutputStream keystoreOut = new FileOutputStream(Filepath.KEYSTORE);
-        keyStore.store(keystoreOut, keystorePassword.toCharArray());
     }
 }

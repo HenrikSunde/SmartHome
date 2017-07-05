@@ -1,14 +1,22 @@
 package ca_server;
 
 import callback.CAServerControllerCallback;
+import constant.Filepath;
+import constant.SysProp;
 import javafx.application.Platform;
-import util.CloseableUtil;
-import util.LogUtil;
-import util.SocketReaderUtil;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import util.*;
 
 import javax.net.ssl.SSLSocket;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
@@ -28,6 +36,7 @@ public class CAClientConnection extends Thread
     private String connectTime;
     private final String TAG = getClass().getSimpleName();
     private LogUtil log;
+    private String keystorePassword;
 
     // The latch is for the GUI controller to be able to notify this class to continue its process.
     public final CountDownLatch latch = new CountDownLatch(1);
@@ -35,12 +44,13 @@ public class CAClientConnection extends Thread
     /**
      * Constructor
      * */
-    public CAClientConnection(SSLSocket connection, CAServerControllerCallback callback)
+    public CAClientConnection(SSLSocket connection, CAServerControllerCallback callback, String keystorePassword)
     {
         log = new LogUtil(TAG);
         connectTime = new SimpleDateFormat("dd.MM.yyyy - HH:mm:ss").format(new Date());
         this.connection = connection;
         this.callback = callback;
+        this.keystorePassword = keystorePassword;
     }
 
     /**
@@ -64,14 +74,27 @@ public class CAClientConnection extends Thread
             String clientID = SocketReaderUtil.readString(connectionIn);
             log("Received clientID = " + clientID);
 
+            String csrString = SocketReaderUtil.readString(connectionIn);
+            FileWriterUtil.writeString(csrString, false, new File(Filepath.TEMP_CERTS_DIR + SysProp.FS + "tempCSR"));
+            JcaPKCS10CertificationRequest csr = (JcaPKCS10CertificationRequest) CryptographyGenerator.stringToPemObject(csrString);
+            log("Received csr from " + clientID);
+
             // Notify the GUI that a client has connected and desires to receive a signed certificate.
             Platform.runLater(() -> callback.clientConnected(clientID, connectTime, latch));
             
             latch.await();
             
             //This code will be reached when latch.countDown() is called from anywhere:
-            //Code...
-            System.out.println("CSR signing in process...");
+            FileInputStream keyStoreIn = new FileInputStream(Filepath.KEYSTORE);
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(keyStoreIn, keystorePassword.toCharArray());
+
+            PrivateKey privateKey = (PrivateKey) keyStore.getKey("SmartHomeCA", keystorePassword.toCharArray());
+            X509Certificate rootCert = (X509Certificate) keyStore.getCertificate("SmartHomeCA");
+
+            X509Certificate signedCert = CryptographyGenerator.signCSR(privateKey, rootCert, csr);
+            String signedCertString = CryptographyGenerator.pemObjectToString(signedCert);
+            SocketWriterUtil.writeString(signedCertString, connectionOut);
         }
         catch (Exception e)
         {

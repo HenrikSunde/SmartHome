@@ -7,6 +7,7 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
@@ -62,12 +63,15 @@ public class CryptographyGenerator
         return new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(certBuilder.build(signer));
     }
 
-    public static PKCS10CertificationRequest generateCSR(KeyPair keyPair, String CN) throws OperatorCreationException
+    public static JcaPKCS10CertificationRequest generateCSR(KeyPair keyPair, String CN) throws OperatorCreationException
     {
-        PKCS10CertificationRequestBuilder requestBuilder = new JcaPKCS10CertificationRequestBuilder(new X500Principal(CN), keyPair.getPublic());
+        X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
+        nameBuilder.addRDN(BCStyle.CN, CN);
+        PKCS10CertificationRequestBuilder requestBuilder = new JcaPKCS10CertificationRequestBuilder(nameBuilder.build(), keyPair.getPublic());
         JcaContentSignerBuilder csBuilder = new JcaContentSignerBuilder("SHA256withRSA");
         ContentSigner signer = csBuilder.build(keyPair.getPrivate());
-        return requestBuilder.build(signer);
+        PKCS10CertificationRequest csr = requestBuilder.build(signer);
+        return new JcaPKCS10CertificationRequest(csr);
     }
 
     public static X509Certificate signCSR(PrivateKey privateKey, X509Certificate rootCert, JcaPKCS10CertificationRequest csr) throws NoSuchAlgorithmException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException, SignatureException
@@ -83,24 +87,31 @@ public class CryptographyGenerator
         return signedCert;
     }
 
-    public static String certificateToString(X509Certificate certificate) throws IOException
+    public static String pemObjectToString(Object PEMObject) throws IOException
     {
         StringWriter writer = new StringWriter();
         JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
-        pemWriter.writeObject(certificate);
+        pemWriter.writeObject(PEMObject);
         pemWriter.flush();
         pemWriter.close();
         return writer.toString();
     }
 
-    public static X509Certificate stringToCertificate(String certString) throws IOException, CertificateException
+    public static Object stringToPemObject(String pemObjectString) throws IOException, CertificateException
     {
-        StringReader reader = new StringReader(certString);
+        StringReader reader = new StringReader(pemObjectString);
         PEMParser pemParser = new PEMParser(reader);
         Object obj = pemParser.readObject();
         pemParser.close();
-        JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter().setProvider("BC");
-        return certConverter.getCertificate((X509CertificateHolder) obj);
+        if (obj instanceof X509CertificateHolder)
+        {
+            JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter().setProvider("BC");
+            return certConverter.getCertificate((X509CertificateHolder) obj);
+        }
+        else
+        {
+            return obj;
+        }
     }
 
 

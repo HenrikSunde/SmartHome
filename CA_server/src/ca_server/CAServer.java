@@ -78,7 +78,7 @@ public class CAServer extends Thread
             {
                 SSLSocket connection = (SSLSocket) sslServer.accept();
                 log("Client connected " + connection.getInetAddress());
-                new CAClientConnection(connection, callback).start();
+                new CAClientConnection(connection, callback, keystorePassword).start();
             }
         }
         catch (Exception e)

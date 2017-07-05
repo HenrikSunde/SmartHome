@@ -52,9 +52,8 @@ public class CACertificateServerConnection extends Thread
     {
         try
         {
-            FileInputStream keystoreIn = new FileInputStream(Filepath.KEYSTORE);
             KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(keystoreIn, keystorePassword.toCharArray());
+            keyStore.load(null, keystorePassword.toCharArray());
 
             log.i("Connecting to the CA to receive its root certificate...");
             connection = new Socket(host_ip, PORT);
@@ -64,7 +63,7 @@ public class CACertificateServerConnection extends Thread
             SocketToFileStreamUtil.doStream(connectionIn, rootCertFile);
 
             log.i("Importing root certificate to keystore...");
-            keyStore.setCertificateEntry("SmartHomeCA", CryptographyGenerator.stringToCertificate(FileReaderUtil.readString(rootCertFile)));
+            keyStore.setCertificateEntry("SmartHomeCA", (X509Certificate) CryptographyGenerator.stringToPemObject(FileReaderUtil.readString(rootCertFile)));
 
             FileOutputStream keystoreOut = new FileOutputStream(Filepath.KEYSTORE);
             keyStore.store(keystoreOut, keystorePassword.toCharArray());
