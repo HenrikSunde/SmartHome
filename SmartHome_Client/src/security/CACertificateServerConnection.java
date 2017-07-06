@@ -63,7 +63,8 @@ public class CACertificateServerConnection extends Thread
             SocketToFileStreamUtil.doStream(connectionIn, rootCertFile);
 
             log.i("Importing root certificate to keystore...");
-            keyStore.setCertificateEntry("SmartHomeCA", (X509Certificate) CryptographyGenerator.stringToPemObject(FileReaderUtil.readString(rootCertFile)));
+            X509Certificate rootCert = (X509Certificate) CryptographyGenerator.stringToPemObject(FileReaderUtil.readString(rootCertFile));
+            keyStore.setCertificateEntry("SmartHomeCA", rootCert);
 
             FileOutputStream keystoreOut = new FileOutputStream(Filepath.KEYSTORE);
             keyStore.store(keystoreOut, keystorePassword.toCharArray());
@@ -73,6 +74,7 @@ public class CACertificateServerConnection extends Thread
         catch (Exception e)
         {
             log.i("Exception caught. Message: " + e.getMessage());
+            e.printStackTrace();
         }
         finally
         {

@@ -46,16 +46,17 @@ public class SocketReaderUtil
      */
     public static byte[] readBytes(DataInputStream in, int length)
     {
-        byte[] bytes = new byte[length];
+        byte[] bytes;
         try
         {
+            bytes = new byte[length];
             int count = in.read(bytes);
             if (count != length)
             {
                 return null;
             }
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             return null;
         }

@@ -88,13 +88,19 @@ public class CAServerConnection extends Thread
 
             log.i("Waiting for server to send back a signed certificate...");
             String signedCertString = SocketReaderUtil.readString(connectionIn);
-            X509Certificate signedCert = (X509Certificate) CryptographyGenerator.stringToPemObject(signedCertString);
 
-            keyStore.setKeyEntry("SmartHomeClient", keyPair.getPrivate(), keystorePassword.toCharArray(), new Certificate[]{signedCert});
+            X509Certificate signedCert = (X509Certificate) CryptographyGenerator.stringToPemObject(signedCertString);
+            X509Certificate rootCert = (X509Certificate) keyStore.getCertificate("SmartHomeCA");
+
+            keyStore.setKeyEntry("SmartHomeClient", keyPair.getPrivate(), keystorePassword.toCharArray(), new Certificate[]{signedCert, rootCert});
+
+            FileOutputStream keystoreOut = new FileOutputStream(Filepath.KEYSTORE);
+            keyStore.store(keystoreOut, keystorePassword.toCharArray());
         }
         catch (Exception e)
         {
             log.i("Exception caught. Message: " + e.getMessage());
+            e.printStackTrace();
         }
         finally
         {

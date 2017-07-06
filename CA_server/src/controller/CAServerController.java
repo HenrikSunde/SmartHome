@@ -19,6 +19,7 @@ import java.io.FileOutputStream;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ResourceBundle;
 import java.util.concurrent.CountDownLatch;
@@ -188,7 +189,10 @@ public class CAServerController implements Initializable, CAServerControllerCall
                 
                 log("Generating self-signed certificate...");
                 X509Certificate selfSignedCert = CryptographyGenerator.generateSelfSignedCert(CN, validYears, keyPair);
-                
+
+                log("Storing the private key in the KeyStore...");
+                keyStore.setKeyEntry("SmartHomePK", keyPair.getPrivate(), keystorePassword.toCharArray(), new Certificate[]{selfSignedCert});
+
                 log("Storing the self-signed certificate in the KeyStore...");
                 keyStore.setCertificateEntry(alias, selfSignedCert);
                 
@@ -204,6 +208,7 @@ public class CAServerController implements Initializable, CAServerControllerCall
             {
                 log("Exception caught. Undoing all changes... " + e.getMessage());
                 FileUtil.delete(keystoreFile, rootCertFile);
+                e.printStackTrace();
                 return false;
             }
         }

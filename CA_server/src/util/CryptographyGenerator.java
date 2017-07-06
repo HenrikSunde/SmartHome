@@ -108,6 +108,10 @@ public class CryptographyGenerator
             JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter().setProvider("BC");
             return certConverter.getCertificate((X509CertificateHolder) obj);
         }
+        else if (obj instanceof PKCS10CertificationRequest)
+        {
+            return new JcaPKCS10CertificationRequest((PKCS10CertificationRequest) obj);
+        }
         else
         {
             return obj;

@@ -31,6 +31,7 @@ public class CACertificateServer extends Thread
         catch (IOException e)
         {
             log.i("IOException caught. Message: " + e.getMessage());
+            e.printStackTrace();
         }
 
         try
@@ -47,6 +48,7 @@ public class CACertificateServer extends Thread
             if (!e.getMessage().equals("socket closed"))
             {
                 log.i("Exception caught. Message: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }

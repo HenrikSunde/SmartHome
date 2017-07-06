@@ -89,7 +89,7 @@ public class CAClientConnection extends Thread
             KeyStore keyStore = KeyStore.getInstance("JKS");
             keyStore.load(keyStoreIn, keystorePassword.toCharArray());
 
-            PrivateKey privateKey = (PrivateKey) keyStore.getKey("SmartHomeCA", keystorePassword.toCharArray());
+            PrivateKey privateKey = (PrivateKey) keyStore.getKey("SmartHomePK", keystorePassword.toCharArray());
             X509Certificate rootCert = (X509Certificate) keyStore.getCertificate("SmartHomeCA");
 
             X509Certificate signedCert = CryptographyGenerator.signCSR(privateKey, rootCert, csr);
@@ -99,6 +99,7 @@ public class CAClientConnection extends Thread
         catch (Exception e)
         {
             log("Exception caught. Message: " + e.getMessage());
+            e.printStackTrace();
         }
         finally
         {

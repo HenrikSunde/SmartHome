@@ -86,6 +86,7 @@ public class CAServer extends Thread
             if (!e.getMessage().equals("socket closed"))
             {
                 log("Exception caught. Message: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }

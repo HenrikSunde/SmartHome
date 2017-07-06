@@ -48,6 +48,7 @@ public class CACertificateClientConnection extends Thread
         catch (Exception e)
         {
             log.i("Exception caught. Message: " + e.getMessage());
+            e.printStackTrace();
         }
         finally
         {
