@@ -153,8 +153,16 @@ public class CAServerController implements Initializable, CAServerControllerCall
         client_VBox.setMaxWidth(246);
         client_VBox.setOnMouseClicked((e) ->
         {
+            clientID_Label.setText(clientID);
+            connectTime_Label.setText(connectTime);
             certificate_signing_request.setOpacity(1);
-            latch.countDown();
+            sign_certifficate_button.setDisable(false);
+            sign_certifficate_button.setOnAction((event) ->
+            {
+                client_VBox.getChildren().clear();
+                certificate_signing_request.setOpacity(0);
+                latch.countDown();
+            });
         });
         
         pending_requests.getChildren().add(client_VBox);

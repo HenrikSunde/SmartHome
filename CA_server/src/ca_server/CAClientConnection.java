@@ -72,26 +72,26 @@ public class CAClientConnection extends Thread
     
 
             String clientID = SocketReaderUtil.readString(connectionIn);
-            log("Received clientID = " + clientID);
+            log.i("Received clientID = " + clientID);
 
             String csrString = SocketReaderUtil.readString(connectionIn);
-            FileWriterUtil.writeString(csrString, false, new File(Filepath.TEMP_CERTS_DIR + SysProp.FS + "tempCSR"));
             JcaPKCS10CertificationRequest csr = (JcaPKCS10CertificationRequest) CryptographyGenerator.stringToPemObject(csrString);
-            log("Received csr from " + clientID);
+            log.i("Received csr from " + clientID);
 
             // Notify the GUI that a client has connected and desires to receive a signed certificate.
             Platform.runLater(() -> callback.clientConnected(clientID, connectTime, latch));
-            
             latch.await();
             
-            //This code will be reached when latch.countDown() is called from anywhere:
+            // This code will be reached when latch.countDown() is called from anywhere:
             FileInputStream keyStoreIn = new FileInputStream(Filepath.KEYSTORE);
             KeyStore keyStore = KeyStore.getInstance("JKS");
             keyStore.load(keyStoreIn, keystorePassword.toCharArray());
 
+            // Retrieve the private key and the root certificate from the keystore
             PrivateKey privateKey = (PrivateKey) keyStore.getKey("SmartHomePK", keystorePassword.toCharArray());
             X509Certificate rootCert = (X509Certificate) keyStore.getCertificate("SmartHomeCA");
 
+            // Sign the CSR and send the signed certificate to the client
             X509Certificate signedCert = CryptographyGenerator.signCSR(privateKey, rootCert, csr);
             String signedCertString = CryptographyGenerator.pemObjectToString(signedCert);
             SocketWriterUtil.writeString(signedCertString, connectionOut);

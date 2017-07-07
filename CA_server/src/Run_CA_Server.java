@@ -18,7 +18,7 @@ public class Run_CA_Server extends Application
         // Create necessary directories
         new File(Filepath.LOG_DIR).mkdirs();
         new File(Filepath.SECURITY_DIR).mkdirs();
-        new File(Filepath.TEMP_CERTS_DIR).mkdirs();
+//        new File(Filepath.TEMP_CERTS_DIR).mkdirs();
 
         // Launch the GUI
         launch(args);

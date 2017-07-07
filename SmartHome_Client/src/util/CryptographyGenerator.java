@@ -77,8 +77,6 @@ public class CryptographyGenerator
     public static X509Certificate signCSR(PrivateKey privateKey, X509Certificate rootCert, JcaPKCS10CertificationRequest csr) throws NoSuchAlgorithmException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException, SignatureException
     {
         BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
-        AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSA");
-        AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
         JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(rootCert, serial, rootCert.getNotBefore(), rootCert.getNotAfter(), csr.getSubject(), csr.getPublicKey());
         ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(privateKey);
         X509CertificateHolder holder = certBuilder.build(signer);
@@ -107,6 +105,10 @@ public class CryptographyGenerator
         {
             JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter().setProvider("BC");
             return certConverter.getCertificate((X509CertificateHolder) obj);
+        }
+        else if (obj instanceof PKCS10CertificationRequest)
+        {
+            return new JcaPKCS10CertificationRequest((PKCS10CertificationRequest) obj);
         }
         else
         {

@@ -92,8 +92,10 @@ public class CAServerConnection extends Thread
             X509Certificate signedCert = (X509Certificate) CryptographyGenerator.stringToPemObject(signedCertString);
             X509Certificate rootCert = (X509Certificate) keyStore.getCertificate("SmartHomeCA");
 
+            log.i("Importing the signed certificate to the KeyStore...");
             keyStore.setKeyEntry("SmartHomeClient", keyPair.getPrivate(), keystorePassword.toCharArray(), new Certificate[]{signedCert, rootCert});
 
+            log.i("Saving the contents of the KeyStore...");
             FileOutputStream keystoreOut = new FileOutputStream(Filepath.KEYSTORE);
             keyStore.store(keystoreOut, keystorePassword.toCharArray());
         }

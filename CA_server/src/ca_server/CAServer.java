@@ -77,7 +77,7 @@ public class CAServer extends Thread
             while (!isInterrupted())
             {
                 SSLSocket connection = (SSLSocket) sslServer.accept();
-                log("Client connected " + connection.getInetAddress());
+                log("A new client connected: " + connection.getInetAddress());
                 new CAClientConnection(connection, callback, keystorePassword).start();
             }
         }
