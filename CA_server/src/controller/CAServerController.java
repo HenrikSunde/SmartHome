@@ -16,7 +16,9 @@ import util.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -116,6 +118,15 @@ public class CAServerController implements Initializable, CAServerControllerCall
         
         log_messages_scrollPane.vvalueProperty().bind(log_messages.heightProperty());
         pending_requests_scrollPane.vvalueProperty().bind(pending_requests.heightProperty());
+    
+        try
+        {
+            version.setText(InetAddress.getLocalHost().getHostAddress());
+        }
+        catch (UnknownHostException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     /**

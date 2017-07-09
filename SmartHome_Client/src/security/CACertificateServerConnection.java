@@ -21,18 +21,12 @@ import java.security.cert.X509Certificate;
 public class CACertificateServerConnection extends Thread
 {
     private LogUtil log = new LogUtil(getClass().getSimpleName());
-    private File rootCertFile = new File(Filepath.ROOT_CERT);
+    private String keystorePassword;
     private String host_ip;
     private final int PORT = 24575;
 
     private Socket connection;
     private DataInputStream connectionIn;
-
-    // Temporary set values
-    private String keystorePassword;
-    private int keySize = 2048;
-    private String CN = "SmartHome";
-    private int validYears = 25;
 
     /**
      * Constructor
@@ -60,16 +54,15 @@ public class CACertificateServerConnection extends Thread
             connectionIn = new DataInputStream(connection.getInputStream());
 
             log.i("Receiving root certificate...");
-            SocketToFileStreamUtil.doStream(connectionIn, rootCertFile);
+            String rootCertString = SocketReaderUtil.readString(connectionIn);
 
             log.i("Importing root certificate to keystore...");
-            X509Certificate rootCert = (X509Certificate) CryptographyGenerator.stringToPemObject(FileReaderUtil.readString(rootCertFile));
+            X509Certificate rootCert = (X509Certificate) CryptographyGenerator.stringToPemObject(rootCertString);
             keyStore.setCertificateEntry("SmartHomeCA", rootCert);
 
+            log.i("Storing the keystore...");
             FileOutputStream keystoreOut = new FileOutputStream(Filepath.KEYSTORE);
             keyStore.store(keystoreOut, keystorePassword.toCharArray());
-
-            FileUtil.delete(rootCertFile);
         }
         catch (Exception e)
         {

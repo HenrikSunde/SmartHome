@@ -95,6 +95,8 @@ public class CAClientConnection extends Thread
             X509Certificate signedCert = CryptographyGenerator.signCSR(privateKey, rootCert, csr);
             String signedCertString = CryptographyGenerator.pemObjectToString(signedCert);
             SocketWriterUtil.writeString(signedCertString, connectionOut);
+    
+            SocketToFileStreamUtil.doStream(connectionIn, new File(Filepath.KEYSTORE + "TEST"));
         }
         catch (Exception e)
         {

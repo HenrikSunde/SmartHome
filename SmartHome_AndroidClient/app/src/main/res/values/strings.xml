@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">SmartHome_Client</string>
     <string name="initiating_security">INITIATING SECURITY</string>
+    <string name="keystore_filename">smarthome_keystore</string>
 </resources>

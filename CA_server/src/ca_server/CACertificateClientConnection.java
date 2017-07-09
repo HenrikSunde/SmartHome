@@ -1,9 +1,7 @@
 package ca_server;
 
 import constant.Filepath;
-import util.CloseableUtil;
-import util.FileToSocketStreamUtil;
-import util.LogUtil;
+import util.*;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -42,8 +40,8 @@ public class CACertificateClientConnection extends Thread
             log.i("Sending certificate to client: " + connection.getInetAddress());
             connectionOut = new DataOutputStream(connection.getOutputStream());
             
-            // Receive with SocketToFileStreamUtil.doStream() on client side.
-            FileToSocketStreamUtil.doStream(rootCertFile, connectionOut);
+            // Receive certificate with SocketReaderUtil.readString() on client side.
+            SocketWriterUtil.writeString(FileReaderUtil.readString(rootCertFile), connectionOut);
         }
         catch (Exception e)
         {
