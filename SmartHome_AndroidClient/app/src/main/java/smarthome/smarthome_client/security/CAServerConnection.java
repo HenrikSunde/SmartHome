@@ -117,9 +117,6 @@ public class CAServerConnection extends Thread
             Log.i(TAG, "Saving the contents of the KeyStore...");
             FileOutputStream keystoreOut = context.openFileOutput(context.getString(R.string.keystore_filename), Context.MODE_PRIVATE);
             keyStore.store(keystoreOut, keystorePassword.toCharArray());
-
-            // TESTING ONLY
-            FileToSocketStreamUtil.doStream(context.getString(R.string.keystore_filename), context, connectionOut);
         }
         catch (Exception e)
         {

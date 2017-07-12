@@ -51,11 +51,7 @@ public class FileWriterUtil
                 return false;
             }
         }
-        catch (FileNotFoundException e)
-        {
-            return false;
-        }
-        catch (IOException e)
+        catch (Exception e)
         {
             return false;
         }

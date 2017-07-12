@@ -79,8 +79,8 @@ public class CAClientConnection extends Thread
             log.i("Received csr from " + clientID);
 
             // Notify the GUI that a client has connected and desires to receive a signed certificate.
-            Platform.runLater(() -> callback.clientConnected(clientID, connectTime, latch));
-            latch.await();
+//            Platform.runLater(() -> callback.clientConnected(clientID, connectTime, latch));
+//            latch.await();
             
             // This code will be reached when latch.countDown() is called from anywhere:
             FileInputStream keyStoreIn = new FileInputStream(Filepath.KEYSTORE);
@@ -95,8 +95,7 @@ public class CAClientConnection extends Thread
             X509Certificate signedCert = CryptographyGenerator.signCSR(privateKey, rootCert, csr);
             String signedCertString = CryptographyGenerator.pemObjectToString(signedCert);
             SocketWriterUtil.writeString(signedCertString, connectionOut);
-    
-            SocketToFileStreamUtil.doStream(connectionIn, new File(Filepath.KEYSTORE + "TEST"));
+            log("Signed certificate is sent back to the client.");
         }
         catch (Exception e)
         {

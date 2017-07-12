@@ -14,9 +14,12 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import util.*;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.KeyPair;
@@ -118,14 +121,26 @@ public class CAServerController implements Initializable, CAServerControllerCall
         
         log_messages_scrollPane.vvalueProperty().bind(log_messages.heightProperty());
         pending_requests_scrollPane.vvalueProperty().bind(pending_requests.heightProperty());
-    
+
         try
         {
-            version.setText(InetAddress.getLocalHost().getHostAddress());
+            URL wtfismyip = new URL("https://wtfismyip.com/text");
+            BufferedReader urlIn = new BufferedReader(new InputStreamReader(wtfismyip.openStream()));
+            String ip = urlIn.readLine();
+            urlIn.close();
+            System.out.println(ip);
+            version.setText(ip);
         }
-        catch (UnknownHostException e)
+        catch (Exception e)
         {
-            e.printStackTrace();
+            try
+            {
+                version.setText(InetAddress.getLocalHost().getHostAddress());
+            }
+            catch (Exception e2)
+            {
+                version.setText("WTF IS MY IP?");
+            }
         }
     }
 

@@ -29,6 +29,7 @@ public class SocketToFileStreamUtil
                 byte[] bytes = SocketReaderUtil.readBytes(in, length);
                 FileWriterUtil.streamBytes(bytes, out);
             }
+            CloseableUtil.close(out);
         }
         catch (FileNotFoundException e)
         {
