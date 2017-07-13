@@ -26,12 +26,17 @@ public class MainActivity extends Activity
 
         sharedPrefs = getSharedPreferences(getString(R.string.sharedPrefs), MODE_PRIVATE);
 
-        File keystoreFile = new File(context.getFilesDir(), getString(R.string.keystore_filename));
-        if (!keystoreFile.exists())
-        {
-            Intent hostIPIntent = new Intent(this, InputHostIPActivity.class);
-            startActivityForResult(hostIPIntent, 1);
-        }
+
+        Intent mainMenuIntent = new Intent(this, MainMenuActivity.class);
+        startActivity(mainMenuIntent);
+        finish();
+
+//        File keystoreFile = new File(context.getFilesDir(), getString(R.string.keystore_filename));
+//        if (!keystoreFile.exists())
+//        {
+//            Intent hostIPIntent = new Intent(this, InputHostIPActivity.class);
+//            startActivityForResult(hostIPIntent, 1);
+//        }
     }
 
     @Override
@@ -49,6 +54,9 @@ public class MainActivity extends Activity
             CAServerConnection caServerConnection = new CAServerConnection(keystorePassword, host, context);
             caServerConnection.start();
             caServerConnection.join();
+
+            Intent mainMenuIntent = new Intent(this, MainMenuActivity.class);
+            startActivity(mainMenuIntent);
         }
         catch (Exception e)
         {

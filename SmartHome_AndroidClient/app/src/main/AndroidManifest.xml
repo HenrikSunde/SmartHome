@@ -26,6 +26,27 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".MainMenuActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.ALL_APPS"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ShoppinglistActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.ALL_APPS"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".DinnerPlannerActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.ALL_APPS"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>
