@@ -1,7 +1,11 @@
 <resources>
-    <string name="app_name">SmartHome_Client</string>
+    <string name="app_name">SmartHome</string>
 
+    <!-- SharedPreference names -->
     <string name="sharedPrefs">SmartHomePrefs</string>
+    <string name="shoppinglistPrefs">ShoppinglistPrefs</string>
+    <string name="dinnerPlannerPrefs">DinnerPlannerPrefs</string>
+
     <string name="CAServerIPAddress">CAServerIPAddress</string>
 
     <string name="initiating_security">INITIATING SECURITY</string>
