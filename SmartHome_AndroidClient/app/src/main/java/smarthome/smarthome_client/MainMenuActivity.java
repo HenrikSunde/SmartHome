@@ -43,10 +43,6 @@ public class MainMenuActivity extends Activity
                 startActivity(dinnerPlannerIntent);
                 break;
 
-            case R.id.bottom_imageview:
-                Toast.makeText(this, "Bottom button pressed", Toast.LENGTH_SHORT).show();
-                break;
-
             default:
                 break;
         }

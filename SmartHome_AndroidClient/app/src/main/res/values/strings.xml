@@ -1,10 +1,25 @@
 <resources>
     <string name="app_name">SmartHome</string>
 
+    <!-- Activity labels-->
+    <string name="main_menu_label">Main Menu</string>
+    <string name="shoppinglist_label">Shopping list</string>
+    <string name="dinner_planner_label">Dinner Planner</string>
+
     <!-- SharedPreference names -->
     <string name="sharedPrefs">SmartHomePrefs</string>
     <string name="shoppinglistPrefs">ShoppinglistPrefs</string>
     <string name="dinnerPlannerPrefs">DinnerPlannerPrefs</string>
+
+    <!-- UI components -->
+    <string name="add_item">Add</string>
+    <string name="add_item_hint">Add an item to the shopping list…</string>
+    <string name="remove_item">X</string>
+    <string name="item_found">Found</string>
+    <string name="item_name">Item name</string>
+    <string name="remove_marked_items">Remove marked</string>
+    <string name="remove_all_items">Remove all</string>
+    <string name="hide_keyboard">Hide keyboard</string>
 
     <string name="CAServerIPAddress">CAServerIPAddress</string>
 

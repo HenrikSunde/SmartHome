@@ -26,21 +26,30 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".MainMenuActivity">
+        <activity
+            android:name=".MainMenuActivity"
+            android:label="@string/main_menu_label">
             <intent-filter>
                 <action android:name="android.intent.action.ALL_APPS"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
 
-        <activity android:name=".ShoppinglistActivity">
+        <activity
+            android:name=".ShoppinglistActivity"
+            android:parentActivityName=".MainMenuActivity"
+            android:label="@string/shoppinglist_label"
+            android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.ALL_APPS"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
 
-        <activity android:name=".DinnerPlannerActivity">
+        <activity
+            android:name=".DinnerPlannerActivity"
+            android:parentActivityName=".MainMenuActivity"
+            android:label="@string/dinner_planner_label">
             <intent-filter>
                 <action android:name="android.intent.action.ALL_APPS"/>
                 <category android:name="android.intent.category.DEFAULT"/>

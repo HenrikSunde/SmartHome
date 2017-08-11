@@ -24,13 +24,4 @@
         android:background="@drawable/meal_planner_icon"
         android:onClick="onMenuItemClicked"/>
 
-    <ImageView
-        android:id="@+id/bottom_imageview"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_below="@+id/dinner_planner_imageview"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
-        android:background="@android:color/holo_purple"
-        android:onClick="onMenuItemClicked"/>
 </RelativeLayout>
