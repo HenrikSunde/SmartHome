@@ -7,31 +7,76 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import smarthome.smarthome_client.arraylists.ShoppinglistItemArrayList;
 import smarthome.smarthome_client.models.ShoppingListItem;
 import smarthome.smarthome_client.R;
 
 /***************************************************************************************************
  *
  **************************************************************************************************/
-public class ShoppinglistAdapter extends ArrayAdapter<Object>
+public class ShoppinglistAdapter extends BaseAdapter
 {
-    public ShoppinglistAdapter(@NonNull Context context, @NonNull List<Object> objects)
+    private LayoutInflater mInflater;
+    private ShoppinglistItemArrayList mList;
+
+    public ShoppinglistAdapter(@NonNull Context context, @NonNull ShoppinglistItemArrayList items)
     {
-        super(context, R.layout.custom_shoppinglist_row, objects);
+        super();
+        mInflater = LayoutInflater.from(context);
+        mList = items;
+    }
+
+    public void add(ShoppingListItem item)
+    {
+        mList.add(item);
+    }
+
+    public void remove(String itemName)
+    {
+        mList.removeItem(itemName);
+    }
+
+    public void clear()
+    {
+        mList.clear();
+    }
+
+    @Override
+    public int getCount()
+    {
+        return mList.size();
+    }
+
+    public boolean contains(String itemName)
+    {
+        return mList.contains(itemName);
+    }
+
+    @Override
+    public ShoppingListItem getItem(int position)
+    {
+        return mList.get(position);
+    }
+
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
     }
 
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent)
     {
-        LayoutInflater inflater = LayoutInflater.from(getContext());
-        View customView = inflater.inflate(R.layout.custom_shoppinglist_row, parent, false);
+        View customView = mInflater.inflate(R.layout.custom_shoppinglist_row, parent, false);
 
-        ShoppingListItem singleShoppinglistItem = (ShoppingListItem) getItem(position);
+        ShoppingListItem singleShoppinglistItem = getItem(position);
         TextView shoppinglistItemName = (TextView) customView.findViewById(R.id.shoppinglist_item_name_textview);
 
         shoppinglistItemName.setText(singleShoppinglistItem.getItemName());

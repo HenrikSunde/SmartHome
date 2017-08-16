@@ -14,8 +14,14 @@ public final class DatabaseContract
 
     public static class DatabaseEntry implements BaseColumns
     {
-        public static final String TABLE_SHOPPINGLISTITEM = "shoppinglist";
-        public static final String COLUMN_ITEMNAME = "itemname";
-        public static final String COLUMN_ITEMMARKED = "itemmarked";
+        public static final String DESCENDING = "DESC";
+        public static final String ASCENDING = "ASC";
+
+        public static final String TABLE_ITEMSUGGESTIONS = "itemsuggestions";
+        public static final String COLUMN_IS_ITEMNAME = "itemname";
+
+        public static final String TABLE_DEFAULTSHOPPINGLIST = "defaultshoppinglist";
+        public static final String COLUMN_DSH_ITEMNAME = "itemname";
+        public static final String COLUMN_DSH_ITEMMARKED = "itemmarked";
     }
 }

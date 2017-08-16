@@ -12,14 +12,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <activity android:name=".InputHostIPActivity">
+        <activity android:name=".activity.security.InputHostIPActivity">
             <intent-filter>
                 <action android:name="android.intent.action.ALL_APPS"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -27,7 +27,7 @@
         </activity>
 
         <activity
-            android:name=".MainMenuActivity"
+            android:name=".activity.application.MainMenuActivity"
             android:label="@string/main_menu_label">
             <intent-filter>
                 <action android:name="android.intent.action.ALL_APPS"/>
@@ -36,8 +36,8 @@
         </activity>
 
         <activity
-            android:name=".ShoppinglistActivity"
-            android:parentActivityName=".MainMenuActivity"
+            android:name=".activity.application.shoppinglist.ShoppinglistActivity"
+            android:parentActivityName=".activity.application.MainMenuActivity"
             android:label="@string/shoppinglist_label"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
@@ -47,8 +47,8 @@
         </activity>
 
         <activity
-            android:name=".DinnerPlannerActivity"
-            android:parentActivityName=".MainMenuActivity"
+            android:name=".activity.application.dinnerplanner.DinnerPlannerActivity"
+            android:parentActivityName=".activity.application.MainMenuActivity"
             android:label="@string/dinner_planner_label">
             <intent-filter>
                 <action android:name="android.intent.action.ALL_APPS"/>

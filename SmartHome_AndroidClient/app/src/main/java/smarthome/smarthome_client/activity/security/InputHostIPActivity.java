@@ -1,4 +1,4 @@
-package smarthome.smarthome_client;
+package smarthome.smarthome_client.activity.security;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import smarthome.smarthome_client.R;
 
 /***************************************************************************************************
  *

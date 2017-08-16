@@ -1,11 +1,12 @@
 package smarthome.smarthome_client.listeners;
 
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.AutoCompleteTextView;
 
-import smarthome.smarthome_client.ShoppinglistActivity;
-import smarthome.smarthome_client.logic.Logic;
+import smarthome.smarthome_client.activity.application.shoppinglist.ShoppinglistActivity;
+import static smarthome.smarthome_client.logic.Logic.*;
 
 /***************************************************************************************************
  *
@@ -39,9 +40,15 @@ public class Searchbar_TextWatcher implements TextWatcher
     public void afterTextChanged(Editable s)
     {
         String text = s.toString();
+        
+        if (text.contains(System.getProperty("line.separator")) && text.trim().replace(System.getProperty("line.separator"), "").equals(""))
+        {
+            s.clear();
+            return;
+        }
 
         // If the first letter is lowercase - make it uppercase
-        if (!backspace && text.length() > 0 && Logic.charIsLowerCase(text.charAt(0)))
+        if (!backspace && charIsLowerCase(text.charAt(0)))
         {
             s.replace(0, 1, String.valueOf(text.charAt(0)).toUpperCase());
         }

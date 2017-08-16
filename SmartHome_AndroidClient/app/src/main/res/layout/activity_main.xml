@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="smarthome.smarthome_client.MainActivity">
+    tools:context="smarthome.smarthome_client.activity.MainActivity">
 
     <TextView
         android:id="@+id/textView"

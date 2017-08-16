@@ -15,8 +15,9 @@
             android:layout_height="50sp"
             android:layout_alignParentTop="true"
             android:layout_alignParentStart="true"
-            android:dropDownHeight="120sp"
+            android:dropDownHeight="wrap_content"
             android:hint="@string/add_item_hint"/>
+        <!--android:dropDownHeight="150sp"-->
 
         <Button
             android:id="@+id/add_item_btn"

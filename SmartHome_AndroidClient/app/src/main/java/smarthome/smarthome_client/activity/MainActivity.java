@@ -1,4 +1,4 @@
-package smarthome.smarthome_client;
+package smarthome.smarthome_client.activity;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,8 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import java.io.File;
-
+import smarthome.smarthome_client.activity.application.MainMenuActivity;
+import smarthome.smarthome_client.R;
 import smarthome.smarthome_client.security.CACertificateServerConnection;
 import smarthome.smarthome_client.security.CAServerConnection;
 

@@ -1,4 +1,4 @@
-package smarthome.smarthome_client;
+package smarthome.smarthome_client.activity.application;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,7 +6,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toast;
+
+import smarthome.smarthome_client.activity.application.dinnerplanner.DinnerPlannerActivity;
+import smarthome.smarthome_client.R;
+import smarthome.smarthome_client.activity.application.shoppinglist.ShoppinglistActivity;
 
 /**
  *
