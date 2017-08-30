@@ -1,7 +1,6 @@
 package smarthome.smarthome_client.activity.application.dinnerplanner;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 

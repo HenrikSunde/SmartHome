@@ -3,7 +3,6 @@ package smarthome.smarthome_client.util;
 import android.content.Context;
 
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 

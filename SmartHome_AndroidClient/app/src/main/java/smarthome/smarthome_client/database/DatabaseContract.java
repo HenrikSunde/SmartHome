@@ -1,8 +1,5 @@
 package smarthome.smarthome_client.database;
 
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
 /***************************************************************************************************
@@ -10,18 +7,32 @@ import android.provider.BaseColumns;
  **************************************************************************************************/
 public final class DatabaseContract
 {
-    private DatabaseContract(){}
+    private DatabaseContract()
+    {
+    }
 
     public static class DatabaseEntry implements BaseColumns
     {
+        // Sorting options
         public static final String DESCENDING = "DESC";
         public static final String ASCENDING = "ASC";
 
-        public static final String TABLE_ITEMSUGGESTIONS = "itemsuggestions";
-        public static final String COLUMN_IS_ITEMNAME = "itemname";
+        // Table suggestions
+        public static final String TABLE_SUGGESTIONS = "suggestions";
+        public static final String COLUMN_SUGGESTION_ITEMNAME = "name";
+        public static final String COLUMN_SUGGESTION_LIST = "itemlist";
 
-        public static final String TABLE_DEFAULTSHOPPINGLIST = "defaultshoppinglist";
-        public static final String COLUMN_DSH_ITEMNAME = "itemname";
-        public static final String COLUMN_DSH_ITEMMARKED = "itemmarked";
+        // Table items
+        public static final String TABLE_ITEMS = "items";
+        public static final String COLUMN_ITEM_NAME = "name";
+        public static final String COLUMN_ITEM_MARKED = "marked";
+        public static final String COLUMN_ITEM_DATEADDED = "dateadded";
+        public static final String COLUMN_ITEM_LIST = "itemlist";
+
+        // Table itemlists
+        public static final String TABLE_ITEMLISTS = "itemlists";
+        public static final String COLUMN_ITEMLIST_NAME = "name";
+        public static final String COLUMN_ITEMLIST_ICON = "icon";
+        public static final String COLUMN_ITEMLIST_PUBLIC = "publicList";
     }
 }

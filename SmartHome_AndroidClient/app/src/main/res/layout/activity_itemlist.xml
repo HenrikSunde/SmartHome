@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- The main content view -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:id="@+id/searchBar_Header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true">
+
+            <AutoCompleteTextView
+                android:id="@+id/item_searchbar_textView"
+                android:layout_width="290sp"
+                android:layout_height="50sp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:dropDownHeight="wrap_content"
+                android:hint="@string/add_item_hint"/>
+
+            <Button
+                android:id="@+id/add_item_btn"
+                android:layout_width="80sp"
+                android:layout_height="50sp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="5sp"
+                android:layout_marginEnd="5sp"
+                android:text="@string/add_item"
+                android:onClick="onAddItem"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/buttonPanel_Footer"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_alignParentBottom="true">
+
+            <Button
+                android:id="@+id/remove_all_items_btn"
+                android:layout_width="80sp"
+                android:layout_height="50sp"
+                android:layout_marginEnd="5sp"
+                android:layout_marginBottom="5sp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:text="@string/remove_all_items"
+                android:textSize="10sp"/>
+
+            <Button
+                android:id="@+id/remove_marked_items_btn"
+                android:layout_width="80sp"
+                android:layout_height="50sp"
+                android:layout_marginEnd="5sp"
+                android:layout_marginBottom="5sp"
+                android:layout_alignParentBottom="true"
+                android:layout_toStartOf="@id/remove_all_items_btn"
+                android:text="@string/remove_marked_items"
+                android:textSize="10sp"/>
+
+            <Button
+                android:id="@+id/hide_keyboard_btn"
+                android:layout_width="80sp"
+                android:layout_height="50sp"
+                android:layout_marginStart="5sp"
+                android:layout_marginBottom="5sp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentStart="true"
+                android:text="@string/hide_keyboard"
+                android:textSize="10sp"/>
+        </RelativeLayout>
+
+        <ListView
+            android:id="@+id/shoppinglist_listview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/searchBar_Header"
+            android:layout_above="@id/buttonPanel_Footer"
+            android:layout_margin="10sp"
+            android:background="@drawable/border"/>
+    </RelativeLayout>
+
+
+
+    <!-- The navigation drawer -->
+    <RelativeLayout android:id="@+id/left_drawer"
+                    android:layout_gravity="start"
+                    android:layout_width="240dp"
+                    android:layout_height="match_parent"
+                    android:onClick="onNavDrawerClick"
+                    android:background="@color/primary_blue">
+
+        <RelativeLayout
+            android:id="@+id/drawer_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp">
+
+            <ImageView
+                android:id="@+id/drawer_item_icon_main_menu"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="30dp"
+                android:background="@drawable/ic_home_black_24dp"/>
+
+            <TextView
+                android:id="@+id/navigation_drawer_main_menu"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginTop="11dp"
+                android:layout_alignParentTop="true"
+                android:layout_toEndOf="@+id/drawer_item_icon_main_menu"
+                android:textColor="@android:color/black"
+                android:text="@string/back_to_main_menu"/>
+
+            <TextView
+                android:id="@+id/drawer_lists_title"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:layout_below="@id/drawer_item_icon_main_menu"
+                android:text="@string/drawer_lists_title"/>
+
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:id="@+id/drawer_footer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="5dp">
+
+            <ImageView
+                android:id="@+id/drawer_create_list_icon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/ic_add_black_24dp"/>
+
+            <TextView
+                android:id="@+id/drawer_create_list_textview"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginTop="11dp"
+                android:layout_alignParentTop="true"
+                android:layout_toEndOf="@+id/drawer_create_list_icon"
+                android:textColor="@android:color/black"
+                android:onClick="onCreateNewItemlist"
+                android:text="@string/create_new_list"/>
+
+            <ImageView
+                android:id="@+id/drawer_settings_icon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentStart="true"
+                android:layout_below="@id/drawer_create_list_icon"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/ic_settings_black_24dp"/>
+
+            <TextView
+                android:id="@+id/drawer_settings_textview"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginTop="11dp"
+                android:layout_below="@id/drawer_create_list_textview"
+                android:layout_toEndOf="@+id/drawer_settings_icon"
+                android:textColor="@android:color/black"
+                android:text="@string/settings"/>
+
+        </RelativeLayout>
+
+        <ListView android:id="@+id/drawer_lists"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:layout_below="@+id/drawer_header"
+                  android:layout_above="@id/drawer_footer"
+                  android:choiceMode="singleChoice"
+                  android:divider="@android:color/transparent"/>
+
+    </RelativeLayout>
+
+</android.support.v4.widget.DrawerLayout>

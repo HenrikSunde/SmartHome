@@ -5,12 +5,15 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 
-import smarthome.smarthome_client.arraylists.ShoppinglistItemArrayList;
+import smarthome.smarthome_client.arraylists.ItemlistItem_ArrayList;
+import smarthome.smarthome_client.arraylists.NavigationDrawerItem_ArrayList;
 import smarthome.smarthome_client.database.DatabaseContract.DatabaseEntry;
-import smarthome.smarthome_client.models.ShoppingListItem;
+import smarthome.smarthome_client.models.ItemlistItem;
+import smarthome.smarthome_client.models.NavigationDrawerItem;
 
 /***************************************************************************************************
  *
@@ -21,23 +24,42 @@ public class DbHelper extends SQLiteOpenHelper
     public static final String DATABASE_NAME = "Database.db";
 
 
-    private static final String SQL_CREATE_ITEMSUGGESTIONS =
-            "CREATE TABLE " + DatabaseEntry.TABLE_ITEMSUGGESTIONS + " (" +
+
+
+    private static final String SQL_CREATE_ITEMLISTS =
+            "CREATE TABLE " + DatabaseEntry.TABLE_ITEMLISTS + " (" +
                     DatabaseEntry._ID + " INTEGER PRIMARY KEY," +
-                    DatabaseEntry.COLUMN_IS_ITEMNAME + " TEXT)";
+                    DatabaseEntry.COLUMN_ITEMLIST_NAME + " TEXT," +
+                    DatabaseEntry.COLUMN_ITEMLIST_ICON + " INTEGER," +
+                    DatabaseEntry.COLUMN_ITEMLIST_PUBLIC + " INTEGER)";
+    private static final String SQL_DELETE_ITEMLISTS =
+            "DROP TABLE IF EXISTS " + DatabaseEntry.TABLE_ITEMLISTS;
 
-    private static final String SQL_DELETE_ITEMSUGGESTIONS =
-            "DROP TABLE IF EXISTS " + DatabaseEntry.TABLE_ITEMSUGGESTIONS;
 
 
-    private static final String SQL_CREATE_DEFAULTSHOPPINGLIST =
-            "CREATE TABLE " + DatabaseEntry.TABLE_DEFAULTSHOPPINGLIST + " (" +
+
+    private static final String SQL_CREATE_SUGGESTIONS =
+            "CREATE TABLE " + DatabaseEntry.TABLE_SUGGESTIONS + " (" +
                     DatabaseEntry._ID + " INTEGER PRIMARY KEY," +
-                    DatabaseEntry.COLUMN_DSH_ITEMNAME + " TEXT," +
-                    DatabaseEntry.COLUMN_DSH_ITEMMARKED + " INTEGER)";
+                    DatabaseEntry.COLUMN_SUGGESTION_ITEMNAME + " TEXT," +
+                    DatabaseEntry.COLUMN_SUGGESTION_LIST + " TEXT)";
+//                    DatabaseEntry.COLUMN_SUGGESTION_LIST + " TEXT REFERENCES " + DatabaseEntry.TABLE_ITEMLISTS + "(" + DatabaseEntry.COLUMN_ITEMLIST_NAME + "))";
+    private static final String SQL_DELETE_SUGGESTIONS =
+            "DROP TABLE IF EXISTS " + DatabaseEntry.TABLE_SUGGESTIONS;
 
-    private static final String SQL_DELETE_DEFAULTSHOPPINGLIST =
-            "DROP TABLE IF EXISTS " + DatabaseEntry.TABLE_DEFAULTSHOPPINGLIST;
+
+
+
+    private static final String SQL_CREATE_ITEMS =
+            "CREATE TABLE " + DatabaseEntry.TABLE_ITEMS + " (" +
+                    DatabaseEntry._ID + " INTEGER PRIMARY KEY," +
+                    DatabaseEntry.COLUMN_ITEM_NAME + " TEXT," +
+                    DatabaseEntry.COLUMN_ITEM_MARKED + " INTEGER," +
+                    DatabaseEntry.COLUMN_ITEM_DATEADDED + " TEXT," +
+                    DatabaseEntry.COLUMN_ITEM_LIST + " TEXT)";
+//                    DatabaseEntry.COLUMN_ITEM_LIST + " TEXT REFERENCES " + DatabaseEntry.TABLE_ITEMLISTS + "(" + DatabaseEntry.COLUMN_ITEMLIST_NAME + "))";
+    private static final String SQL_DELETE_ITEMS =
+            "DROP TABLE IF EXISTS " + DatabaseEntry.TABLE_ITEMS;
 
 
 
@@ -54,18 +76,188 @@ public class DbHelper extends SQLiteOpenHelper
 
 
 
+
+
+    public static void deleteItemLists(SQLiteDatabase db)
+    {
+        Log.i("TEST", "In deleteItemLists()");
+        db.delete(DatabaseEntry.TABLE_ITEMLISTS, null, null);
+    }
+
+    public static void deleteItemlist(SQLiteDatabase db, String itemlistName)
+    {
+        Log.i("TEST", "In deleteItemList()");
+        deleteItemsInItemlist(db, itemlistName);
+        deleteSuggestionsForItemlist(db, itemlistName);
+        db.delete(DatabaseEntry.TABLE_ITEMLISTS, DatabaseEntry.COLUMN_ITEMLIST_NAME + "=?", new String[]{itemlistName});
+    }
+
+    public static void deleteItemsInItemlist(SQLiteDatabase db, String itemlistName)
+    {
+        Log.i("TEST", "In deleteItemsInItemlist()");
+        db.delete(DatabaseEntry.TABLE_ITEMS, DatabaseEntry.COLUMN_ITEM_LIST + "=?", new String[]{itemlistName});
+    }
+
+    public static void deleteSuggestionsForItemlist(SQLiteDatabase db, String itemlistName)
+    {
+        Log.i("TEST", "In deleteSuggestionsForItemList()");
+        db.delete(DatabaseEntry.TABLE_SUGGESTIONS, DatabaseEntry.COLUMN_SUGGESTION_LIST + "=?", new String[]{itemlistName});
+    }
+
+
+
+
+
+    public static NavigationDrawerItem_ArrayList getItemLists(SQLiteDatabase db)
+    {
+        Log.i("TEST", "In getItemLists()");
+        Cursor cursor = db.query(
+                DatabaseEntry.TABLE_ITEMLISTS,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        NavigationDrawerItem_ArrayList returnList = new NavigationDrawerItem_ArrayList();
+        while (cursor.moveToNext())
+        {
+            String itemName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_NAME));
+            int icon = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_ICON));
+            boolean publicList = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_PUBLIC)) == 1;
+
+            NavigationDrawerItem item = new NavigationDrawerItem(itemName, icon, publicList);
+            returnList.add(item);
+
+            Log.i("TEST", "*** getItemLists() *** - itemName=" + itemName + " ::: icon=" + icon);
+        }
+        cursor.close();
+        return returnList;
+    }
+
+
+    public static ItemlistItem_ArrayList getItemsForList(SQLiteDatabase db, String listName)
+    {
+        Log.i("TEST", "In getItemsForList()");
+        Cursor cursor = db.query(
+                DatabaseEntry.TABLE_ITEMS,
+                null,
+                DatabaseEntry.COLUMN_ITEM_LIST + "=?",
+                new String[]{listName},
+                null,
+                null,
+                null);
+
+        ItemlistItem_ArrayList returnList = new ItemlistItem_ArrayList();
+        while (cursor.moveToNext())
+        {
+            String itemName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_SUGGESTION_ITEMNAME));
+            boolean marked = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEM_MARKED)) == 1;
+            String addedDate = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEM_DATEADDED));
+
+            ItemlistItem item = new ItemlistItem(itemName, marked, addedDate);
+            returnList.add(item);
+            Log.i("TEST", "*** getItemsForList() *** - listName=" + listName + " ::: itemName=" + itemName + " ::: marked=" + marked + " ::: addedDate=" + addedDate);
+        }
+        cursor.close();
+        return returnList;
+    }
+
+
+    public static ArrayList<String> getSuggestionsForList(SQLiteDatabase db, String listName)
+    {
+        Log.i("TEST", "In getSuggestionsForList()");
+        Cursor cursor = db.query(
+                DatabaseEntry.TABLE_SUGGESTIONS,
+                null,
+                DatabaseEntry.COLUMN_SUGGESTION_LIST + "=?",
+                new String[]{listName},
+                null,
+                null,
+                DatabaseEntry.COLUMN_SUGGESTION_ITEMNAME + " " + DatabaseEntry.ASCENDING);
+
+        ArrayList<String> returnList = new ArrayList<>();
+        while (cursor.moveToNext())
+        {
+            String itemName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_SUGGESTION_ITEMNAME));
+
+            returnList.add(itemName);
+            Log.i("TEST", "*** getSuggestionsForList() *** - listName=" + listName + " ::: itemName=" + itemName);
+        }
+        cursor.close();
+        return returnList;
+    }
+
+
+
+
+
+
+
+    public static void insertAllItemLists(SQLiteDatabase db, NavigationDrawerItem_ArrayList itemLists)
+    {
+        Log.i("TEST", "In insertAllItemLists()");
+        ContentValues values;
+        for (NavigationDrawerItem item : itemLists)
+        {
+            values = new ContentValues();
+            values.put(DatabaseEntry.COLUMN_ITEMLIST_NAME, item.getItemName());
+            values.put(DatabaseEntry.COLUMN_ITEMLIST_ICON, item.getIconResourceID());
+            values.put(DatabaseEntry.COLUMN_ITEMLIST_PUBLIC, item.isPublicList() ? 1 : 0);
+            long newRowId = db.insert(DatabaseEntry.TABLE_ITEMLISTS, null, values);
+            Log.i("TEST", "*** insertAllItemLists() *** - rowId= " + newRowId + " ::: itemName=" + item.getItemName() + " ::: icon=" + item.getIconResourceID() + " ::: public=" + item.isPublicList());
+        }
+    }
+
+    public static void insertAllItems(SQLiteDatabase db, ItemlistItem_ArrayList items, String listName)
+    {
+        Log.i("TEST", "In insertAllItems()");
+        ContentValues values;
+        for (ItemlistItem item : items)
+        {
+            values = new ContentValues();
+            values.put(DatabaseEntry.COLUMN_ITEM_NAME, item.getItemName());
+            values.put(DatabaseEntry.COLUMN_ITEM_MARKED, item.isMarked() ? 1 : 0);
+            values.put(DatabaseEntry.COLUMN_ITEM_DATEADDED, item.getAddDateFormatted());
+            values.put(DatabaseEntry.COLUMN_ITEM_LIST, listName);
+            long newRowId = db.insert(DatabaseEntry.TABLE_ITEMS, null, values);
+            Log.i("TEST", "*** insertAllItems() *** - rowId= " + newRowId + " ::: itemName=" + item.getItemName() + " ::: marked=" + item.isMarked() + " ::: addedDate=" + item.getAddDateFormatted() + " ::: listName=" + listName);
+        }
+    }
+
+    public static void insertAllSuggestions(SQLiteDatabase db, ArrayList<String> suggestions, String listName)
+    {
+        Log.i("TEST", "In insertAllSuggestions()");
+        ContentValues values;
+        for (String suggestion : suggestions)
+        {
+            values = new ContentValues();
+            values.put(DatabaseEntry.COLUMN_SUGGESTION_ITEMNAME, suggestion);
+            values.put(DatabaseEntry.COLUMN_SUGGESTION_LIST, listName);
+            long newRowId = db.insert(DatabaseEntry.TABLE_SUGGESTIONS, null, values);
+            Log.i("TEST", "*** insertAllSuggestions() *** - rowId= " + newRowId + " ::: suggestion=" + suggestion + " ::: listName=" + listName);
+        }
+    }
+
+
+
+
+
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-        db.execSQL(SQL_CREATE_ITEMSUGGESTIONS);
-        db.execSQL(SQL_CREATE_DEFAULTSHOPPINGLIST);
+        db.execSQL(SQL_CREATE_ITEMLISTS);
+        db.execSQL(SQL_CREATE_SUGGESTIONS);
+        db.execSQL(SQL_CREATE_ITEMS);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
-        db.execSQL(SQL_DELETE_ITEMSUGGESTIONS);
-        db.execSQL(SQL_DELETE_DEFAULTSHOPPINGLIST);
+        db.execSQL(SQL_DELETE_SUGGESTIONS);
+        db.execSQL(SQL_DELETE_ITEMS);
+        db.execSQL(SQL_DELETE_ITEMLISTS);
         onCreate(db);
     }
 
@@ -73,90 +265,5 @@ public class DbHelper extends SQLiteOpenHelper
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
         onUpgrade(db, oldVersion, newVersion);
-    }
-
-
-    /**
-     * Returns a table as an ArrayList containing each row as an individual object
-     * */
-    public static ShoppinglistItemArrayList getAllShoppinglistItemEntries(SQLiteDatabase db, String tableName, String orderBy)
-    {
-        Cursor cursor = db.query(
-                tableName,
-                null,
-                null,
-                null,
-                null,
-                null,
-                orderBy);
-
-        ShoppinglistItemArrayList returnArrayList = new ShoppinglistItemArrayList();
-        while (cursor.moveToNext())
-        {
-            String itemName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_DSH_ITEMNAME));
-            boolean itemMarked = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_DSH_ITEMMARKED)) == 1;
-
-            returnArrayList.add(new ShoppingListItem(itemName, itemMarked));
-        }
-        cursor.close();
-        return returnArrayList;
-    }
-
-    public static ArrayList<String> getAllSuggestionEntries(SQLiteDatabase db)
-    {
-        Cursor cursor = db.query(
-                DatabaseEntry.TABLE_ITEMSUGGESTIONS,
-                null,
-                null,
-                null,
-                null,
-                null,
-                DatabaseEntry.COLUMN_IS_ITEMNAME + " " + DatabaseEntry.ASCENDING);
-
-        ArrayList<String> returnArrayList = new ArrayList<>();
-        while (cursor.moveToNext())
-        {
-            String itemName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_IS_ITEMNAME));
-
-            returnArrayList.add(itemName);
-        }
-        cursor.close();
-        return returnArrayList;
-    }
-
-
-    /**
-     * Clears all data from a table
-     * */
-    public static void clearAllEntries(SQLiteDatabase db, String tableName)
-    {
-        db.execSQL("DELETE FROM " + tableName);
-    }
-
-    /**
-     * Inserts entryList into a table
-     * */
-    public static void insertAllSuggestionEntries(SQLiteDatabase db, String tableName, ArrayList<String> entryList)
-    {
-        ContentValues values;
-
-        for (String suggestion : entryList)
-        {
-            values = new ContentValues();
-            values.put(DatabaseEntry.COLUMN_IS_ITEMNAME, suggestion);
-            long newRowId = db.insert(tableName, null, values);
-        }
-    }
-
-    public static void insertAllShoppinglistItemEntries(SQLiteDatabase db, String tableName, ShoppinglistItemArrayList entryList)
-    {
-        ContentValues values;
-        for (ShoppingListItem item : entryList)
-        {
-            values = new ContentValues();
-            values.put(DatabaseEntry.COLUMN_DSH_ITEMNAME, item.getItemName());
-            values.put(DatabaseEntry.COLUMN_DSH_ITEMMARKED, item.isMarked() ? 1 : 0);
-            long newRowId = db.insert(tableName, null, values);
-        }
     }
 }

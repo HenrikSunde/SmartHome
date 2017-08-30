@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/itemlist_name_editText"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:hint="@string/name_for_new_list_hint"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="50dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"/>
+
+
+    <RelativeLayout
+        android:id="@+id/itemlist_icon_relativeLayout"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_below="@+id/itemlist_name_editText"
+        android:layout_alignStart="@+id/itemlist_name_editText"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/border_gray">
+
+        <ImageView
+            android:id="@+id/itemlist_icon_imageView"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerInParent="true"
+            android:background="@drawable/ic_crop_7_5_black_24dp"/>
+    </RelativeLayout>
+
+
+    <TextView
+        android:id="@+id/itemlist_icontips_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:gravity="center"
+        android:layout_toEndOf="@+id/itemlist_icon_relativeLayout"
+        android:layout_marginStart="10dp"
+        android:layout_alignTop="@id/itemlist_icon_relativeLayout"
+        android:textColor="@android:color/black"
+        android:text="@string/select_an_icon"/>
+
+    <Switch
+        android:id="@+id/public_switch"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/itemlist_icon_relativeLayout"
+        android:layout_below="@+id/itemlist_icon_relativeLayout"
+        android:layout_marginTop="50dp"
+        android:text="@string/public_switch"/>
+
+    <Button
+        android:id="@+id/cancel_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/cancel"
+        android:layout_marginTop="100dp"
+        android:layout_below="@+id/public_switch"
+        android:layout_alignStart="@+id/public_switch"/>
+
+    <Button
+        android:id="@+id/save_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/save"
+        android:layout_marginStart="50dp"
+        android:layout_alignTop="@+id/cancel_button"
+        android:layout_toEndOf="@+id/cancel_button"/>
+
+    <Button
+        android:id="@+id/delete_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:text="@string/delete_list"/>
+</RelativeLayout>

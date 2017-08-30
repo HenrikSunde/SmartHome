@@ -7,9 +7,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 
-import smarthome.smarthome_client.activity.application.dinnerplanner.DinnerPlannerActivity;
 import smarthome.smarthome_client.R;
-import smarthome.smarthome_client.activity.application.shoppinglist.ShoppinglistActivity;
+import smarthome.smarthome_client.activity.application.dinnerplanner.DinnerPlannerActivity;
+import smarthome.smarthome_client.activity.application.itemlist.ItemlistActivity;
 
 /**
  *
@@ -28,7 +28,7 @@ public class MainMenuActivity extends Activity
 
         sharedPrefs = getSharedPreferences(getString(R.string.sharedPrefs), MODE_PRIVATE);
 
-        shoppinglistIntent = new Intent(this, ShoppinglistActivity.class);
+        shoppinglistIntent = new Intent(this, ItemlistActivity.class);
         dinnerPlannerIntent = new Intent(this, DinnerPlannerActivity.class);
     }
 

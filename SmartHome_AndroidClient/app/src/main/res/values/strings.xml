@@ -3,13 +3,14 @@
 
     <!-- Activity labels-->
     <string name="main_menu_label">Main Menu</string>
-    <string name="shoppinglist_label">Shopping list</string>
+    <string name="itemlist_label">Item list</string>
     <string name="dinner_planner_label">Dinner Planner</string>
 
     <!-- SharedPreference names -->
     <string name="sharedPrefs">SmartHomePrefs</string>
     <string name="shoppinglistPrefs">ShoppinglistPrefs</string>
     <string name="dinnerPlannerPrefs">DinnerPlannerPrefs</string>
+    <string name="selectedItemList">selected_item_list</string>
 
     <!-- UI components -->
     <string name="add_item">Add</string>
@@ -20,6 +21,19 @@
     <string name="remove_marked_items">Remove marked</string>
     <string name="remove_all_items">Remove all</string>
     <string name="hide_keyboard">Hide keyboard</string>
+    <string name="drawer_title"></string>
+    <string name="drawer_open"></string>
+    <string name="back_to_main_menu">Back to main menu</string>
+    <string name="drawer_lists_title">Available lists</string>
+    <string name="settings">Settings</string>
+    <string name="create_new_list">Create a new list</string>
+    <string name="new_list">New list</string>
+    <string name="select_an_icon">Select an icon</string>
+    <string name="public_switch">Public</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete_list">Delete list</string>
+    <string name="name_for_new_list_hint">Name your list</string>
 
     <string name="CAServerIPAddress">CAServerIPAddress</string>
 

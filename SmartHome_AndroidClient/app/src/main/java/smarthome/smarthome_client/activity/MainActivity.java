@@ -6,10 +6,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import smarthome.smarthome_client.activity.application.MainMenuActivity;
 import smarthome.smarthome_client.R;
-import smarthome.smarthome_client.security.CACertificateServerConnection;
-import smarthome.smarthome_client.security.CAServerConnection;
+import smarthome.smarthome_client.activity.application.MainMenuActivity;
+import smarthome.smarthome_client.security.CACertificate_ServerConnection;
+import smarthome.smarthome_client.security.CA_ServerConnection;
 
 public class MainActivity extends Activity
 {
@@ -47,11 +47,11 @@ public class MainActivity extends Activity
             String host = sharedPrefs.getString(getString(R.string.CAServerIPAddress), "invalidIP");
             String keystorePassword = "123456";
 
-            CACertificateServerConnection caCertificateServerConnection = new CACertificateServerConnection(keystorePassword, host, context);
+            CACertificate_ServerConnection caCertificateServerConnection = new CACertificate_ServerConnection(keystorePassword, host, context);
             caCertificateServerConnection.start();
             caCertificateServerConnection.join();
 
-            CAServerConnection caServerConnection = new CAServerConnection(keystorePassword, host, context);
+            CA_ServerConnection caServerConnection = new CA_ServerConnection(keystorePassword, host, context);
             caServerConnection.start();
             caServerConnection.join();
 
