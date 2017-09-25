@@ -1,99 +1,42 @@
 package smarthome.smarthome_client.adapters;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.Paint;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 
-import java.util.Collections;
 import java.util.Comparator;
 
 import smarthome.smarthome_client.R;
-import smarthome.smarthome_client.arraylists.ItemlistItem_ArrayList;
-import smarthome.smarthome_client.clicklisteners.itemlist.Itemlist_ItemClickListener;
-import smarthome.smarthome_client.clicklisteners.itemlist.Itemlist_ItemRemove_ButtonClickListener;
+import smarthome.smarthome_client.arraylists.ItemArraylist;
+import smarthome.smarthome_client.exceptions.NotImplementedException;
 import smarthome.smarthome_client.models.ItemlistItem;
+import smarthome.smarthome_client.models.interfaces.NameableItem;
 
 /***************************************************************************************************
  *
  **************************************************************************************************/
-public class Itemlist_Adapter extends BaseAdapter
+public class Itemlist_Adapter extends SmartHomeBaseAdapter<ItemlistItem>
 {
+    private Activity mActivity;
     private LayoutInflater mInflater;
-    private ItemlistItem_ArrayList mList;
-    private Comparator<ItemlistItem> mComparator;
 
-    public Itemlist_Adapter(@NonNull Context context, @NonNull ItemlistItem_ArrayList items, Comparator<ItemlistItem> comparator)
+    public Itemlist_Adapter(Activity activity, ItemArraylist<ItemlistItem> list, Comparator<ItemlistItem> sortListWith_Comparator)
     {
-        super();
-        mInflater = LayoutInflater.from(context);
-        mList = items;
-        mComparator = comparator;
+        super(list, sortListWith_Comparator);
+
+        mActivity = activity;
+        mInflater = LayoutInflater.from(mActivity.getApplicationContext());
     }
-
-
-    public void add(ItemlistItem item)
-    {
-        mList.add(item);
-        Collections.sort(mList, mComparator);
-        notifyDataSetChanged();
-    }
-
-
-    public void remove(String itemName)
-    {
-        mList.removeItem(itemName);
-        notifyDataSetChanged();
-    }
-
-
-    public void clear()
-    {
-        mList.clear();
-        notifyDataSetChanged();
-    }
-
 
     @Override
-    public int getCount()
+    public void editItem(ItemlistItem originalItem, ItemlistItem newItem)
     {
-        return mList.size();
-    }
-
-
-    public boolean contains(String itemName)
-    {
-        return mList.contains(itemName);
-    }
-
-
-    public ItemlistItem_ArrayList getList()
-    {
-        return mList;
-    }
-
-
-    @Override
-    public ItemlistItem getItem(int position)
-    {
-        return mList.get(position);
-    }
-
-
-    public ItemlistItem getItem(String itemName)
-    {
-        return mList.getItem(itemName);
-    }
-
-
-    @Override
-    public long getItemId(int position)
-    {
-        return position;
+        throw new NotImplementedException();
     }
 
 
@@ -105,15 +48,45 @@ public class Itemlist_Adapter extends BaseAdapter
         {
             convertView = mInflater.inflate(R.layout.custom_itemlist_row, parent, false);
         }
+
+        // Find views
         TextView itemlistItemName = (TextView) convertView.findViewById(R.id.shoppinglist_item_name_textview);
+        Button removeButton = (Button) convertView.findViewById(R.id.shoppinglist_item_remove_btn);
 
         // Set onClickListeners
-        itemlistItemName.setOnClickListener(new Itemlist_ItemClickListener(this));
-        convertView.findViewById(R.id.shoppinglist_item_remove_btn).setOnClickListener(new Itemlist_ItemRemove_ButtonClickListener(this));
+        itemlistItemName.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                TextView item_textView = (TextView) v.findViewById(R.id.shoppinglist_item_name_textview);
+
+                String itemName = item_textView.getText().toString();
+                ItemlistItem item = getItem(itemName);
+
+                // Switch between marked and unmarked
+                item.setMarked(!item.isMarked());
+
+                notifyDataSetChanged();
+            }
+        });
+        removeButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                ViewGroup parent = (ViewGroup) v.getParent();
+                TextView item_textView = (TextView) parent.findViewById(R.id.shoppinglist_item_name_textview);
+
+                String itemName = item_textView.getText().toString();
+                remove(itemName);
+                notifyDataSetChanged();
+            }
+        });
 
         // Set the text of the TextView (itemName)
         ItemlistItem singleItemlistItem = getItem(position);
-        itemlistItemName.setText(singleItemlistItem.getItemName());
+        itemlistItemName.setText(singleItemlistItem.getName());
 
         // Put a strike through the text if the item is marked
         if (singleItemlistItem.isMarked())

@@ -22,7 +22,7 @@
                 android:layout_height="50sp"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentStart="true"
-                android:dropDownHeight="wrap_content"
+                android:dropDownHeight="200sp"
                 android:hint="@string/add_item_hint"/>
 
             <Button
@@ -90,49 +90,24 @@
 
 
     <!-- The navigation drawer -->
-    <RelativeLayout android:id="@+id/left_drawer"
-                    android:layout_gravity="start"
+    <RelativeLayout android:id="@+id/right_drawer"
+                    android:layout_gravity="end"
                     android:layout_width="240dp"
                     android:layout_height="match_parent"
                     android:onClick="onNavDrawerClick"
                     android:background="@color/primary_blue">
 
-        <RelativeLayout
-            android:id="@+id/drawer_header"
+        <TextView
+            android:id="@+id/drawer_lists_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp">
-
-            <ImageView
-                android:id="@+id/drawer_item_icon_main_menu"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="30dp"
-                android:background="@drawable/ic_home_black_24dp"/>
-
-            <TextView
-                android:id="@+id/navigation_drawer_main_menu"
-                android:layout_width="match_parent"
-                android:layout_height="20dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_marginTop="11dp"
-                android:layout_alignParentTop="true"
-                android:layout_toEndOf="@+id/drawer_item_icon_main_menu"
-                android:textColor="@android:color/black"
-                android:text="@string/back_to_main_menu"/>
-
-            <TextView
-                android:id="@+id/drawer_lists_title"
-                android:layout_width="match_parent"
-                android:layout_height="20dp"
-                android:layout_below="@id/drawer_item_icon_main_menu"
-                android:text="@string/drawer_lists_title"/>
-
-        </RelativeLayout>
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:textColor="@color/actionbar_gray"
+            android:text="@string/drawer_lists_title"/>
 
 
         <RelativeLayout
@@ -192,7 +167,7 @@
         <ListView android:id="@+id/drawer_lists"
                   android:layout_width="match_parent"
                   android:layout_height="match_parent"
-                  android:layout_below="@+id/drawer_header"
+                  android:layout_below="@+id/drawer_lists_title"
                   android:layout_above="@id/drawer_footer"
                   android:choiceMode="singleChoice"
                   android:divider="@android:color/transparent"/>

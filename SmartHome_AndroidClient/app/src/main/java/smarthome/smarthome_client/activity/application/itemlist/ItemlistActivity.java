@@ -2,45 +2,51 @@ package smarthome.smarthome_client.activity.application.itemlist;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 
 import smarthome.smarthome_client.R;
 import smarthome.smarthome_client.actionbardrawertoggles.Itemlist_NavigationDrawer_Toggle;
+import smarthome.smarthome_client.adapters.SmartHomeBaseAdapter;
 import smarthome.smarthome_client.adapters.Suggestion_Adapter;
 import smarthome.smarthome_client.adapters.Itemlist_Adapter;
 import smarthome.smarthome_client.adapters.Itemlist_NavigationDrawer_Adapter;
-import smarthome.smarthome_client.arraylists.NavigationDrawerItem_ArrayList;
-import smarthome.smarthome_client.arraylists.ItemlistItem_ArrayList;
-import smarthome.smarthome_client.clicklisteners.navigationdrawer.Itemlist_NavigationDrawerItem_ClickListener;
-import smarthome.smarthome_client.clicklisteners.navigationdrawer.MainMenu_ButtonClickListener;
-import smarthome.smarthome_client.clicklisteners.itemlist.Add_ButtonClickListener;
-import smarthome.smarthome_client.clicklisteners.itemlist.HideKeyboard_ButtonClickListener;
-import smarthome.smarthome_client.clicklisteners.itemlist.RemoveAllItems_ButtonClickListener;
-import smarthome.smarthome_client.clicklisteners.itemlist.RemoveMarkedItems_ButtonClickListener;
-import smarthome.smarthome_client.comparators.SuggestionItem_Comparator;
-import smarthome.smarthome_client.comparators.NavigationDrawerItem_Comparator;
-import smarthome.smarthome_client.comparators.ItemlistItem_Comparator;
+import smarthome.smarthome_client.arraylists.ItemArraylist;
+import smarthome.smarthome_client.comparators.ComparatorFactory;
 import smarthome.smarthome_client.database.DbHelper;
+import smarthome.smarthome_client.database.ItemDbRepository;
+import smarthome.smarthome_client.database.ItemlistDbRepository;
+import smarthome.smarthome_client.database.SuggestionDbRepository;
+import smarthome.smarthome_client.database.interfaces.IItemRepository;
+import smarthome.smarthome_client.database.interfaces.IItemlistRepository;
+import smarthome.smarthome_client.database.interfaces.ISuggestionRepository;
 import smarthome.smarthome_client.listeners.SuggestionField_TextWatcher;
-import smarthome.smarthome_client.models.NavigationDrawerItem;
+import smarthome.smarthome_client.models.ItemlistTitleItem;
 import smarthome.smarthome_client.models.ItemlistItem;
+import smarthome.smarthome_client.models.Suggestion;
 
 /***************************************************************************************************
  *
@@ -50,37 +56,45 @@ public class ItemlistActivity extends Activity
     // Constants
     private final String LOGTAG = getClass().getSimpleName();
     public static final int EDITLISTACTIVITY_REQUESTCODE = 1;
+    public static final int EDITLIST_DELETED = 1;
+    public static final int EDITLIST_EDITED = 2;
+    public static final int EDITLIST_NEWLIST = 3;
 
     // Database
     private DbHelper mDbHelper;
+    private static IItemlistRepository mItemlistRepo;
+    private static IItemRepository mItemRepo;
+    private static ISuggestionRepository mSuggestionRepo;
 
     // Views
     private AutoCompleteTextView mItemlistSuggestionField_acTextView;
     private ListView mItemlist_listView;
+
+    // Actionbar
     private ActionBar mActionBar;
+    private ImageView mHome_Button;
+    private ImageView mNavigationDrawer_Button;
+    private TextView mActionBarTitle_TextView;
 
     // Navigation drawer
-    private NavigationDrawerItem_ArrayList mNavigationDrawerItems;
+    private ItemArraylist<ItemlistTitleItem> mAllItemlistTitleItems;
     private DrawerLayout mNavigationDrawerLayout;
     private RelativeLayout mNavigationDrawer;
     private ListView mNavigationDrawer_itemlists_listView;
-    private Itemlist_NavigationDrawer_Adapter mNavigationDrawerAdapter;
     private ActionBarDrawerToggle mNavigationDrawerToggle;
-    private Comparator<NavigationDrawerItem> mNavigationDrawerItemComparator;
-    private NavigationDrawerItem newlyCreatedItem = null;
-    private String preEditedItemName = null;
-    private String deleteThisList = null;
 
-    // Searchbar
-    private ArrayList<String> mSuggestions;
+    // Currently selected
+    private ItemlistTitleItem mSelectedItemlistTitleItem;
+    private ItemArraylist<ItemlistItem> mSelectedItemlistItems;
+    private ItemArraylist<Suggestion> mSelectedSuggestions;
+
+
+    private SmartHomeBaseAdapter<ItemlistTitleItem> mNavigationDrawerAdapter;
     private Suggestion_Adapter mSuggestionAdapter;
-    private Comparator<String> mSuggestionComparator;
+    private SmartHomeBaseAdapter<ItemlistItem> mItemlistAdapter;
 
-    // Shoppinglist
-    private ItemlistItem_ArrayList mSelectedItemlist;
-    private String mSelectedItemlistTitle;
-    private Itemlist_Adapter mItemlistAdapter;
-    private Comparator<ItemlistItem> mItemlistItemComparator;
+    // Comparator
+    private ComparatorFactory mComparatorFactory = new ComparatorFactory();
 
     // Shared preferences
     private SharedPreferences prefs;
@@ -99,37 +113,53 @@ public class ItemlistActivity extends Activity
 
         // Instantiate the database helper
         mDbHelper = new DbHelper(getApplicationContext());
+        mItemlistRepo = new ItemlistDbRepository(mDbHelper);
+        mSuggestionRepo = new SuggestionDbRepository(mDbHelper);
+        mItemRepo = new ItemDbRepository(mDbHelper);
 
         // SharedPreferences
         prefs = getPreferences(MODE_PRIVATE);
 
+        // Get the selected itemlist
+        String savedSelectedItemlistTitle = prefs.getString(getString(R.string.selectedItemList), "");
+        if (savedSelectedItemlistTitle.equals(""))
+        {
+            mSelectedItemlistTitleItem = new ItemlistTitleItem("", 0, false, false);
+        }
+        else
+        {
+            mSelectedItemlistTitleItem = mItemlistRepo.get(savedSelectedItemlistTitle);
+        }
 
-        // Get the selected itemlist and set the title
-        mSelectedItemlistTitle = prefs.getString(getString(R.string.selectedItemList), "");
+
+        // Actionbar magic
         mActionBar = getActionBar();
-        mActionBar.setTitle(mSelectedItemlistTitle);
-        mActionBar.setDisplayHomeAsUpEnabled(true);
-        mActionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
+        mActionBar.setDisplayShowHomeEnabled(false);
+        mActionBar.setDisplayShowTitleEnabled(false);
+        View actionBarLayout = getLayoutInflater().inflate(R.layout.actionbar_menu, null);
+        mActionBar.setCustomView(actionBarLayout);
+        mActionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        mActionBar.setDisplayShowCustomEnabled(true);
+        mHome_Button = (ImageView) findViewById(R.id.home_imageView);
+        mNavigationDrawer_Button = (ImageView) findViewById(R.id.open_navigation_drawer_imageView);
+        mActionBarTitle_TextView = (TextView) findViewById(R.id.action_bar_title_textView);
 
 
         // Navigation drawer
         mNavigationDrawer_itemlists_listView = (ListView) findViewById(R.id.drawer_lists);
-        mNavigationDrawerItems = new NavigationDrawerItem_ArrayList();
+        mAllItemlistTitleItems = new ItemArraylist<>();
         mNavigationDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mNavigationDrawer = (RelativeLayout) findViewById(R.id.left_drawer);
-        mNavigationDrawerItemComparator = NavigationDrawerItem_Comparator.getNameComparator(true);
-        mNavigationDrawerAdapter = new Itemlist_NavigationDrawer_Adapter(getApplicationContext(), mNavigationDrawerItems, mNavigationDrawerItemComparator, this);
+        mNavigationDrawer = (RelativeLayout) findViewById(R.id.right_drawer);
+        mNavigationDrawerAdapter = new Itemlist_NavigationDrawer_Adapter(this, mAllItemlistTitleItems, mComparatorFactory.getTitleItemNameComparator(true));
         mNavigationDrawer_itemlists_listView.setAdapter(mNavigationDrawerAdapter);
-        mNavigationDrawer_itemlists_listView.setOnItemClickListener(new Itemlist_NavigationDrawerItem_ClickListener(this));
         mNavigationDrawerToggle = new Itemlist_NavigationDrawer_Toggle(this, mNavigationDrawerLayout, R.string.drawer_open, R.string.drawer_open);
         mNavigationDrawerLayout.addDrawerListener(mNavigationDrawerToggle);
 
 
         // Get the searchbar and populate the hint with the array of all shoppinglist items
         mItemlistSuggestionField_acTextView = (AutoCompleteTextView) findViewById(R.id.item_searchbar_textView);
-        mSuggestionComparator = SuggestionItem_Comparator.getNameComparator(true);
-        mSuggestions = new ArrayList<>();
-        mSuggestionAdapter = new Suggestion_Adapter(this, mSuggestions, mSuggestionComparator, mItemlistSuggestionField_acTextView, this);
+        mSelectedSuggestions = new ItemArraylist<>();
+        mSuggestionAdapter = new Suggestion_Adapter(this, mSelectedSuggestions, mComparatorFactory.getSuggestionNameComparator(true));
         mItemlistSuggestionField_acTextView.setAdapter(mSuggestionAdapter);
         mItemlistSuggestionField_acTextView.setThreshold(1);
         mItemlistSuggestionField_acTextView.addTextChangedListener(new SuggestionField_TextWatcher(this, mItemlistSuggestionField_acTextView));
@@ -137,9 +167,8 @@ public class ItemlistActivity extends Activity
 
         // Get the listview for the current shoppinglist and populate it with the shoppinglist array
         mItemlist_listView = (ListView) findViewById(R.id.shoppinglist_listview);
-        mItemlistItemComparator = ItemlistItem_Comparator.getDateComparator(false);
-        mSelectedItemlist = new ItemlistItem_ArrayList();
-        mItemlistAdapter = new Itemlist_Adapter(this, mSelectedItemlist, mItemlistItemComparator);
+        mSelectedItemlistItems = new ItemArraylist<>();
+        mItemlistAdapter = new Itemlist_Adapter(this, mSelectedItemlistItems, mComparatorFactory.getDateComparator(false));
         mItemlist_listView.setAdapter(mItemlistAdapter);
 
         initiateButtonOnClickListeners();
@@ -147,11 +176,133 @@ public class ItemlistActivity extends Activity
 
     private void initiateButtonOnClickListeners()
     {
-        findViewById(R.id.hide_keyboard_btn).setOnClickListener(new HideKeyboard_ButtonClickListener(getApplicationContext(), mItemlistSuggestionField_acTextView));
-        findViewById(R.id.remove_marked_items_btn).setOnClickListener(new RemoveMarkedItems_ButtonClickListener(mSelectedItemlist, mItemlistAdapter));
-        findViewById(R.id.remove_all_items_btn).setOnClickListener(new RemoveAllItems_ButtonClickListener(mItemlistAdapter));
-        findViewById(R.id.add_item_btn).setOnClickListener(new Add_ButtonClickListener(this));
-        findViewById(R.id.navigation_drawer_main_menu).setOnClickListener(new MainMenu_ButtonClickListener(this));
+        //
+        findViewById(R.id.hide_keyboard_btn).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            }
+        });
+
+        //
+        findViewById(R.id.remove_marked_items_btn).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        if (which == DialogInterface.BUTTON_POSITIVE)
+                        {
+                            // Make an ArrayList with the items that should be removed (marked)
+                            ArrayList<String> removeTheseItems = new ArrayList<>();
+                            for (ItemlistItem item : mSelectedItemlistItems)
+                            {
+                                if (item.isMarked())
+                                {
+                                    removeTheseItems.add(item.getName());
+                                }
+                            }
+
+                            // Remove the marked items
+                            for (String itemName : removeTheseItems)
+                            {
+                                mItemlistAdapter.remove(itemName);
+                            }
+
+                            if (!removeTheseItems.isEmpty())
+                            {
+                                mItemlistAdapter.notifyDataSetChanged();
+                            }
+                        }
+                    }
+                };
+                if (!mSelectedItemlistItems.isEmpty())
+                {
+                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(v.getContext());
+                    alertBuilder.setMessage("Remove all marked items from the list?").setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener).show();
+                }
+            }
+        });
+
+        //
+        findViewById(R.id.remove_all_items_btn).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        if (which == DialogInterface.BUTTON_POSITIVE)
+                        {
+                            mItemlistAdapter.clear();
+                            mItemlistAdapter.notifyDataSetChanged();
+                        }
+                    }
+                };
+                if (!mItemlistAdapter.isEmpty())
+                {
+                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(v.getContext());
+                    alertBuilder.setMessage("Clear the list?").setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener).show();
+                }
+            }
+        });
+
+        //
+        findViewById(R.id.add_item_btn).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                onAddItem(v);
+            }
+        });
+
+        //
+        mHome_Button.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                finish();
+            }
+        });
+
+        //
+        mNavigationDrawer_Button.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if (!mNavigationDrawerLayout.isDrawerOpen(Gravity.END))
+                {
+                    mNavigationDrawerLayout.openDrawer(Gravity.END);
+                }
+                else
+                {
+                    mNavigationDrawerLayout.closeDrawer(Gravity.END);
+                }
+            }
+        });
+
+        //
+        mNavigationDrawer_itemlists_listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                onDrawerItemClick(position);
+            }
+        });
     }
 
 
@@ -175,41 +326,7 @@ public class ItemlistActivity extends Activity
         Log.i(LOGTAG, "*** Start of onResume() ***");
         super.onResume();
 
-        mSuggestionAdapter.clear();
-        mItemlistAdapter.clear();
-
-        updateListsAndItems();
-
-        // Check if a list is created or edited
-        if (newlyCreatedItem != null)
-        {
-            if (preEditedItemName != null)
-            {
-                mNavigationDrawerAdapter.editItem(preEditedItemName, newlyCreatedItem);
-                mSelectedItemlistTitle = newlyCreatedItem.getItemName();
-                mActionBar.setTitle(mSelectedItemlistTitle);
-                preEditedItemName = null;
-            }
-            else
-            {
-                mNavigationDrawerAdapter.add(newlyCreatedItem);
-            }
-            newlyCreatedItem = null;
-        }
-
-        // Check if a list should be deleted
-        if (deleteThisList != null)
-        {
-            mSuggestionAdapter.clear();
-            mItemlistAdapter.clear();
-            mNavigationDrawerAdapter.remove(deleteThisList);
-            if (deleteThisList.equals(mSelectedItemlistTitle))
-            {
-                mSelectedItemlistTitle = "";
-                mActionBar.setTitle(mSelectedItemlistTitle);
-            }
-            deleteThisList = null;
-        }
+        updateSelectedLists();
     }
 
 
@@ -221,8 +338,6 @@ public class ItemlistActivity extends Activity
     {
         Log.i(LOGTAG, "*** Start of onPause() ***");
         super.onPause();
-
-        saveCurrentListAndItems();
     }
 
 
@@ -234,10 +349,6 @@ public class ItemlistActivity extends Activity
     {
         super.onStop();
         Log.i(LOGTAG, "*** Start of onStop() ***");
-
-        prefEditor = prefs.edit();
-        prefEditor.putString(getString(R.string.selectedItemList), mSelectedItemlistTitle);
-        prefEditor.apply();
     }
 
 
@@ -268,32 +379,36 @@ public class ItemlistActivity extends Activity
             return;
         }
 
-        if (mSelectedItemlistTitle.equals(""))
+        if (getSelectedItemlistTitle().equals(""))
         {
             Toast.makeText(view.getContext(), "Please select or create a list from the sidebar", Toast.LENGTH_SHORT).show();
-            mItemlistSuggestionField_acTextView.setText("");
+            setAutoCompleteTextViewText("");
             return;
         }
 
         if (!mSuggestionAdapter.contains(itemName))
         {
             // Add the item as a suggested item
-            mSuggestionAdapter.add(itemName);
+            Suggestion suggestion = new Suggestion(itemName, mSelectedItemlistTitleItem.getId());
+            mSuggestionRepo.add(suggestion);
+            mSuggestionAdapter.add(suggestion);
+            mSuggestionAdapter.notifyDataSetChanged();
         }
 
         if (mItemlistAdapter.contains(itemName))
         {
-            // The item already exists in the list
             Toast.makeText(view.getContext(), itemName + " is already added", Toast.LENGTH_SHORT).show();
         }
         else
         {
             // The item does not exist in the list, it should be added
-            mItemlistAdapter.add(new ItemlistItem(itemName));
+            ItemlistItem item = new ItemlistItem(itemName);
+            mItemRepo.add(item);
+            mItemlistAdapter.add(item);
+            mNavigationDrawerAdapter.notifyDataSetChanged();
         }
 
-        // Clear the searchbar
-        mItemlistSuggestionField_acTextView.setText("");
+        setAutoCompleteTextViewText("");
     }
 
 
@@ -312,89 +427,44 @@ public class ItemlistActivity extends Activity
     public void onDrawerItemClick(int position)
     {
         Log.i(LOGTAG, "In method onDrawerItemClick()");
-        saveCurrentListAndItems();
-        mSelectedItemlistTitle = mNavigationDrawerAdapter.getItem(position).getItemName();
-        updateListsAndItems();
 
-        // Highlight the selected item, update the title, and close the drawer
+        if (mSelectedItemlistTitleItem != null && mItemlistRepo.get(mSelectedItemlistTitleItem.getId()) != null)
+        {
+            // If a list is selected, and the selected list is already in the db
+            // Delete selected lists from db
+            mSuggestionRepo.delete(mSelectedItemlistTitleItem.getId());
+            mItemRepo.delete(mSelectedItemlistTitleItem.getId());
+
+            // Save selected lists to db
+            mSuggestionRepo.add(mSelectedSuggestions);
+            mItemRepo.add(mSelectedItemlistItems);
+        }
+
+        if (position < 0)
+        {
+            // No list is selected
+            setSelectedItemlistTitle(null);
+        }
+        else
+        {
+            // A list is selected
+            setSelectedItemlistTitle(mNavigationDrawerAdapter.getItem(position));
+            if (mItemlistRepo.get(mSelectedItemlistTitleItem.getName()) == null)
+            {
+                // If the list does not exist in the database, add it
+                mItemlistRepo.add(mSelectedItemlistTitleItem);
+            }
+            else
+            {
+                // If the list exists in the database, update it
+                mItemlistRepo.update(mSelectedItemlistTitleItem);
+            }
+        }
         mNavigationDrawer_itemlists_listView.setItemChecked(position, true);
-        mActionBar.setTitle(mSelectedItemlistTitle);
-        mNavigationDrawerLayout.closeDrawer(mNavigationDrawer);
+
+        updateSelectedLists();
     }
 
-
-    /**
-     * Updates the database with the values from the currently selected
-     * itemlist 'mSelectedItemlistTitle'. Deletes the list from the db first to ensure correct
-     * values are there after the current ones are inserted.
-     * */
-    public void saveCurrentListAndItems()
-    {
-        Log.i(LOGTAG, "In method saveCurrentListAndItems()");
-        SQLiteDatabase mDb = mDbHelper.getWritableDatabase();
-
-
-        DbHelper.deleteSuggestionsForItemlist(mDb, mSelectedItemlistTitle);
-        DbHelper.deleteItemsInItemlist(mDb, mSelectedItemlistTitle);
-        DbHelper.deleteItemLists(mDb);
-
-
-        Log.i("TEST", "mNavigationDrawerItems.size() = " + mNavigationDrawerItems.size());
-        DbHelper.insertAllItemLists(mDb, mNavigationDrawerItems);
-
-        Log.i("TEST", "mSelectedItemlist.size() = " + mSelectedItemlist.size());
-        DbHelper.insertAllItems(mDb, mSelectedItemlist, mSelectedItemlistTitle);
-
-        Log.i("TEST", "mSuggestions.size() = " + mSuggestionAdapter.getList().size());
-        DbHelper.insertAllSuggestions(mDb, mSuggestionAdapter.getList(), mSelectedItemlistTitle);
-
-
-        mDb.close();
-    }
-
-
-    /**
-     * Updates the UI with the content from the database corresponding to the current
-     * selected itemlist 'mSelectedItemlistTitle'.
-     * */
-    public void updateListsAndItems()
-    {
-        Log.i(LOGTAG, "In method updateListsAndItems()");
-        SQLiteDatabase mDb = mDbHelper.getReadableDatabase();
-
-        NavigationDrawerItem_ArrayList itemlistsFromDb = DbHelper.getItemLists(mDb);
-        ItemlistItem_ArrayList itemsFromDb = DbHelper.getItemsForList(mDb, mSelectedItemlistTitle);
-        ArrayList<String> itemSuggestionsFromDb = DbHelper.getSuggestionsForList(mDb, mSelectedItemlistTitle);
-
-        mDb.close();
-
-        mNavigationDrawerAdapter.clear();
-        if (itemlistsFromDb.size() > 0)
-        {
-            for (NavigationDrawerItem item : itemlistsFromDb)
-            {
-                mNavigationDrawerAdapter.add(item);
-            }
-        }
-
-        mItemlistAdapter.clear();
-        if (itemsFromDb.size() > 0)
-        {
-            for (ItemlistItem item : itemsFromDb)
-            {
-                mItemlistAdapter.add(item);
-            }
-        }
-
-        mSuggestionAdapter.clear();
-        if (itemSuggestionsFromDb.size() > 0)
-        {
-            for (String itemName : itemSuggestionsFromDb)
-            {
-                mSuggestionAdapter.add(itemName);
-            }
-        }
-    }
 
     /**
      * When 'Create new list' is clicked in the navigation drawer
@@ -413,42 +483,132 @@ public class ItemlistActivity extends Activity
         Log.i(LOGTAG, "In method onActivityResult()");
         if (requestCode == EDITLISTACTIVITY_REQUESTCODE)
         {
-            if (resultCode == RESULT_OK)
+            if (resultCode == EDITLIST_DELETED)
             {
                 String delete = data.getStringExtra("deleted");
-                if (delete != null)
-                {
-                    deleteThisList = delete;
-                }
-                else
-                {
-                    String newListTitle = data.getStringExtra("newListTitle");
-                    int icon = data.getIntExtra("icon", R.drawable.ic_crop_7_5_black_24dp);
-                    boolean publicList = data.getBooleanExtra("listPublic", false);
-                    boolean edited = data.getBooleanExtra("edit", false);
+                mItemlistRepo.delete(mItemlistRepo.get(delete));
+                onDrawerItemClick(-1);
+            }
 
-                    if (mNavigationDrawerAdapter.contains(newListTitle))
-                    {
-                        Toast.makeText(getApplicationContext(), newListTitle + " already exists as a list", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+            else if (resultCode == EDITLIST_EDITED)
+            {
+                // Get values from the intent
+                String originalListName = data.getStringExtra("originalList");
+                String newListTitle = data.getStringExtra("newListTitle");
+                int icon = data.getIntExtra("icon", R.drawable.ic_crop_7_5_black_24dp);
+                boolean publicList = data.getBooleanExtra("listPublic", false);
+                boolean suggestion = data.getBooleanExtra("suggestions", false);
 
-                    if (edited)
-                    {
-                        preEditedItemName = mSelectedItemlistTitle;
-                    }
-                    newlyCreatedItem = new NavigationDrawerItem(newListTitle, icon, publicList);
+                if (mNavigationDrawerAdapter.contains(newListTitle))
+                {
+                    Toast.makeText(getApplicationContext(), newListTitle + " already exists", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                // Create a new item, add it or update the original item if it exists
+                ItemlistTitleItem originalItem = mNavigationDrawerAdapter.getItem(originalListName);
+                ItemlistTitleItem newItem = new ItemlistTitleItem(newListTitle, icon, publicList, suggestion);
+
+                mNavigationDrawerAdapter.editItem(originalItem, newItem);
+
+                onDrawerItemClick(mNavigationDrawerAdapter.getPosition(newItem));
+            }
+
+            else if (resultCode == EDITLIST_NEWLIST)
+            {
+                // Get values from the intent
+                String newListTitle = data.getStringExtra("newListTitle");
+                int icon = data.getIntExtra("icon", R.drawable.ic_crop_7_5_black_24dp);
+                boolean publicList = data.getBooleanExtra("listPublic", false);
+                boolean suggestion = data.getBooleanExtra("suggestions", false);
+
+                if (mNavigationDrawerAdapter.contains(newListTitle))
+                {
+                    Toast.makeText(getApplicationContext(), newListTitle + " already exists", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Create a new item, add it
+                ItemlistTitleItem newItem = new ItemlistTitleItem(newListTitle, icon, publicList, suggestion);
+                mNavigationDrawerAdapter.add(newItem);
+                mNavigationDrawerAdapter.notifyDataSetChanged();
+
+                onDrawerItemClick(mNavigationDrawerAdapter.getPosition(newItem));
             }
         }
     }
 
 
-    public String getActionBarTitle()
+    public void updateSelectedLists()
     {
-        return mSelectedItemlistTitle;
+        int selectedListId = -1;
+        if (mSelectedItemlistTitleItem != null)
+        {
+            selectedListId = mSelectedItemlistTitleItem.getId();
+        }
+
+        // Clear the adapters
+        mItemlistAdapter.clear();
+        mSuggestionAdapter.clear();
+        mItemlistAdapter.clear();
+
+        ItemArraylist<ItemlistTitleItem> titleItems = mItemlistRepo.get();
+        if (titleItems != null)
+        {
+            for (ItemlistTitleItem titleItem : titleItems)
+            {
+                titleItem.setCount(mItemlistRepo.count(titleItem.getId()));
+                mNavigationDrawerAdapter.add(titleItem);
+            }
+        }
+
+        if (selectedListId > 0)
+        {
+            for (Suggestion suggestion : mSuggestionRepo.get(selectedListId))
+            {
+                mSuggestionAdapter.add(suggestion);
+            }
+
+            for (ItemlistItem item : mItemRepo.get(selectedListId))
+            {
+                mItemlistAdapter.add(item);
+            }
+        }
+
+        // Notify the adapters to update the UI
+        mNavigationDrawerAdapter.notifyDataSetChanged();
+        mSuggestionAdapter.notifyDataSetChanged();
+        mItemlistAdapter.notifyDataSetChanged();
     }
 
+
+    public String getSelectedItemlistTitle()
+    {
+        return mSelectedItemlistTitleItem.getName();
+    }
+
+    public void setSelectedItemlistTitle(ItemlistTitleItem titleItem)
+    {
+        mSelectedItemlistTitleItem = titleItem;
+        mActionBarTitle_TextView.setText(getSelectedItemlistTitle());
+
+        prefEditor = prefs.edit();
+        prefEditor.putString(getString(R.string.selectedItemList), getSelectedItemlistTitle());
+        prefEditor.apply();
+    }
+
+
+    public void setAutoCompleteTextViewText(String text)
+    {
+        mItemlistSuggestionField_acTextView.setText(text);
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        return super.onCreateOptionsMenu(menu);
+    }
 
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState)
@@ -469,10 +629,17 @@ public class ItemlistActivity extends Activity
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        if (mNavigationDrawerToggle.onOptionsItemSelected(item))
+        if (item != null && item.getItemId() == android.R.id.home)
         {
-            return true;
+            if (mNavigationDrawerLayout.isDrawerOpen(Gravity.END))
+            {
+                mNavigationDrawerLayout.closeDrawer(Gravity.END);
+            }
+            else
+            {
+                mNavigationDrawerLayout.openDrawer(Gravity.END);
+            }
         }
-        return super.onOptionsItemSelected(item);
+        return true;
     }
 }

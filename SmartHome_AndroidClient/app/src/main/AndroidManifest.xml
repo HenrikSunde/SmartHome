@@ -47,7 +47,7 @@
 
         <activity
             android:name=".activity.application.itemlist.EditListActivity"
-            android:label="@string/new_list">
+            android:label="@string/list_editor">
             <intent-filter>
                 <action android:name="android.intent.action.ALL_APPS"/>
                 <category android:name="android.intent.category.DEFAULT"/>

@@ -1,13 +1,11 @@
 package smarthome.smarthome_client.adapters;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
-import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
@@ -18,64 +16,76 @@ import java.util.Comparator;
 
 import smarthome.smarthome_client.R;
 import smarthome.smarthome_client.activity.application.itemlist.ItemlistActivity;
-import smarthome.smarthome_client.clicklisteners.itemlistsuggestion.Suggestion_ItemClickListener;
-import smarthome.smarthome_client.clicklisteners.itemlistsuggestion.Suggestionlist_ItemRemove_ButtonClickListener;
+import smarthome.smarthome_client.arraylists.ItemArraylist;
+import smarthome.smarthome_client.exceptions.NotImplementedException;
+import smarthome.smarthome_client.models.Suggestion;
+import smarthome.smarthome_client.models.interfaces.NameableItem;
 
 /***************************************************************************************************
  *
  **************************************************************************************************/
-public class Suggestion_Adapter extends BaseAdapter implements Filterable
+public class Suggestion_Adapter extends SmartHomeBaseAdapter<Suggestion> implements Filterable
 {
     private LayoutInflater mInflater;
-    private ArrayList<String> mFilteredList;
-    private ArrayList<String> mFullList;
-    private Comparator<String> mComparator;
-    private AutoCompleteTextView mACTV;
+    private ItemArraylist<Suggestion> mFilteredList;
+    private ItemArraylist<Suggestion> mFullList;
+    private Comparator<Suggestion> mComparator;
     private ItemlistActivity mActivity;
     private SuggestionFilter mFilter;
 
 
-    public Suggestion_Adapter(@NonNull Context context, @NonNull ArrayList<String> suggestions, Comparator<String> comparator, AutoCompleteTextView ACTV, ItemlistActivity activity)
+    public Suggestion_Adapter(ItemlistActivity activity, ItemArraylist<Suggestion> suggestions, Comparator<Suggestion> comparator)
     {
-        super();
-        mInflater = LayoutInflater.from(context);
+        super(suggestions, comparator);
+        mInflater = LayoutInflater.from(activity.getApplicationContext());
         mFilteredList = suggestions;
         mComparator = comparator;
-        mACTV = ACTV;
         mActivity = activity;
     }
 
 
-    public void add(@Nullable String object)
+    @Override
+    public void add(Suggestion item)
     {
         if (mFullList != null)
         {
-            mFullList.add(object);
+            mFullList.add(item);
             Collections.sort(mFullList, mComparator);
         }
         else
         {
-            mFilteredList.add(object);
+            mFilteredList.add(item);
             Collections.sort(mFilteredList, mComparator);
         }
-        notifyDataSetChanged();
     }
 
-
-    public void remove(@Nullable String object)
+    @Override
+    public void remove(Suggestion item)
     {
         if (mFullList != null)
         {
-            mFullList.remove(object);
+            mFullList.remove(item);
         }
         else
         {
-            mFilteredList.remove(object);
+            super.remove(item);
         }
-        notifyDataSetChanged();
     }
 
+    @Override
+    public void remove(String itemName)
+    {
+        if (mFullList != null)
+        {
+            mFullList.removeItem(itemName);
+        }
+        else
+        {
+            super.remove(itemName);
+        }
+    }
 
+    @Override
     public void clear()
     {
         if (mFullList != null)
@@ -84,41 +94,32 @@ public class Suggestion_Adapter extends BaseAdapter implements Filterable
         }
         else
         {
-            mFilteredList.clear();
+            super.clear();
         }
-        notifyDataSetChanged();
     }
-
 
     @Override
-    public int getCount()
+    public boolean contains(Suggestion item)
     {
-        return mFilteredList.size();
+        return mFullList != null ? mFullList.contains(item) : super.contains(item);
     }
-
 
     @Override
-    public String getItem(int position)
+    public boolean contains(String itemName)
     {
-        return mFilteredList.get(position);
+        return mFullList != null ? mFullList.contains(itemName) : super.contains(itemName);
     }
-
 
     @Override
-    public long getItemId(int position)
+    public ItemArraylist<Suggestion> getList()
     {
-        return position;
+        return mFullList != null ? mFullList : mFilteredList;
     }
 
-
-    public boolean contains(String object)
+    @Override
+    public void editItem(Suggestion originalItem, Suggestion newItem)
     {
-        return mFullList == null ? mFilteredList.contains(object) : mFullList.contains(object);
-    }
-
-    public ArrayList<String> getList()
-    {
-        return mFullList == null ? mFilteredList : mFullList;
+        throw new NotImplementedException();
     }
 
 
@@ -132,14 +133,44 @@ public class Suggestion_Adapter extends BaseAdapter implements Filterable
         }
 
         TextView searchbarItemName = (TextView) convertView.findViewById(R.id.searchbar_item_name_textview);
+        final AutoCompleteTextView ACTV = (AutoCompleteTextView) mActivity.findViewById(R.id.item_searchbar_textView);
+        Button removeSuggestionButton = (Button) convertView.findViewById(R.id.searchbar_item_remove_btn);
 
-        searchbarItemName.setOnClickListener(new Suggestion_ItemClickListener(mACTV, mActivity));
-        convertView.findViewById(R.id.searchbar_item_remove_btn).setOnClickListener(new Suggestionlist_ItemRemove_ButtonClickListener(this, mACTV));
+        searchbarItemName.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                TextView item = (TextView) v.findViewById(R.id.searchbar_item_name_textview);
 
-        String singleItem = getItem(position);
+                String itemName = item.getText().toString();
+                ACTV.setText(itemName);
+                mActivity.onAddItem(v);
+            }
+        });
+        removeSuggestionButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                ViewGroup parent = (ViewGroup) v.getParent();
+                TextView item_textView = (TextView) parent.findViewById(R.id.searchbar_item_name_textview);
+
+                String itemName = item_textView.getText().toString();
+                remove(itemName);
+                notifyDataSetChanged();
+
+                // The TextView have to be updated for the adapter to work as intended. Don't know why, but it works.
+                // Set the cursor position after the TextView is refreshed
+                ACTV.setText(ACTV.getText());
+                ACTV.setSelection(ACTV.getText().length());
+            }
+        });
+
+        Suggestion singleItem = getItem(position);
         if (singleItem != null)
         {
-            searchbarItemName.setText(singleItem);
+            searchbarItemName.setText(singleItem.getName());
         }
         else
         {
@@ -151,9 +182,8 @@ public class Suggestion_Adapter extends BaseAdapter implements Filterable
 
 
     @Override
-    public
     @NonNull
-    Filter getFilter()
+    public Filter getFilter()
     {
         if (mFilter == null)
         {
@@ -173,27 +203,27 @@ public class Suggestion_Adapter extends BaseAdapter implements Filterable
 
             if (mFullList == null)
             {
-                mFullList = new ArrayList<>(mFilteredList);
+                mFullList = new ItemArraylist<>(mFilteredList);
             }
 
             if (constraint == null || constraint.length() == 0)
             {
-                ArrayList<String> list = new ArrayList<>(mFullList);
+                ItemArraylist<Suggestion> list = new ItemArraylist<>(mFullList);
                 results.values = list;
                 results.count = list.size();
             }
             else
             {
                 String constraintString = constraint.toString().toLowerCase();
-                ArrayList<String> values = new ArrayList<>(mFullList);
+                ItemArraylist<Suggestion> values = new ItemArraylist<>(mFullList);
 
                 int count = values.size();
-                ArrayList<String> newValues = new ArrayList<>();
+                ItemArraylist<Suggestion> newValues = new ItemArraylist<>();
 
                 for (int i = 0; i < count; i++)
                 {
-                    String value = values.get(i);
-                    String valueString = value.toLowerCase();
+                    Suggestion value = values.get(i);
+                    String valueString = value.getName().toLowerCase();
 
                     if (valueString.startsWith(constraintString))
                     {
@@ -223,7 +253,7 @@ public class Suggestion_Adapter extends BaseAdapter implements Filterable
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results)
         {
-            mFilteredList = (ArrayList<String>) results.values;
+            mFilteredList = (ItemArraylist<Suggestion>) results.values;
             if (results.count > 0)
             {
                 notifyDataSetChanged();

@@ -3,14 +3,14 @@ package smarthome.smarthome_client.exceptions;
 /***************************************************************************************************
  *
  **************************************************************************************************/
-public class NotImplementedException extends UnsupportedOperationException
+public class NotOverwrittenException extends UnsupportedOperationException
 {
-    public NotImplementedException(String message)
+    public NotOverwrittenException(String message)
     {
         super(message);
     }
 
-    public NotImplementedException()
+    public NotOverwrittenException()
     {
         super();
     }

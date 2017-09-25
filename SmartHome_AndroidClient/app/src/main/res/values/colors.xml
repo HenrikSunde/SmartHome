@@ -5,4 +5,5 @@
     <color name="colorAccent">#FF4081</color>
 
     <color name="primary_blue">#53aaed</color>
+    <color name="actionbar_gray">#202020</color>
 </resources>

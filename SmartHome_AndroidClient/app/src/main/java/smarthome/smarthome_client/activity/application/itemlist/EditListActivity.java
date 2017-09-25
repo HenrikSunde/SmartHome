@@ -23,12 +23,12 @@ public class EditListActivity extends Activity
     private EditText mItemList_Name_EditText;
     private ImageView mItemList_Icon_ImageView;
     private Switch mPublicSwitch;
+    private Switch mSuggestionSwitch;
     private Button mCancelButton;
     private Button mSaveButton;
     private Button mDeleteButton;
 
-    private boolean edited = false;
-    private String itemlistName;
+    private String originalItemlistName = "";
 
     /**
      * ON CREATE
@@ -43,6 +43,7 @@ public class EditListActivity extends Activity
         mItemList_Name_EditText = (EditText) findViewById(R.id.itemlist_name_editText);
         mItemList_Icon_ImageView = (ImageView) findViewById(R.id.itemlist_icon_imageView);
         mPublicSwitch = (Switch) findViewById(R.id.public_switch);
+        mSuggestionSwitch = (Switch) findViewById(R.id.suggestions_switch);
         mCancelButton = (Button) findViewById(R.id.cancel_button);
         mSaveButton = (Button) findViewById(R.id.save_button);
         mDeleteButton = (Button) findViewById(R.id.delete_button);
@@ -52,18 +53,20 @@ public class EditListActivity extends Activity
         Intent intent = getIntent();
         if (intent.getBooleanExtra("edit", false))
         {
-            edited = true;
             mDeleteButton.setVisibility(View.VISIBLE);
             mDeleteButton.setClickable(true);
 
-            itemlistName = intent.getStringExtra("itemlistName");
-            mItemList_Name_EditText.setText(itemlistName);
+            originalItemlistName = intent.getStringExtra("itemlistName");
+            mItemList_Name_EditText.setText(originalItemlistName);
 
             int iconID = intent.getIntExtra("icon", R.drawable.ic_crop_7_5_black_24dp);
             mItemList_Icon_ImageView.setBackground(getDrawable(iconID));
 
-            boolean switchPosition = intent.getBooleanExtra("listPublic", false);
-            mPublicSwitch.setChecked(switchPosition);
+            boolean public_switchPosition = intent.getBooleanExtra("listPublic", false);
+            mPublicSwitch.setChecked(public_switchPosition);
+
+            boolean suggestions_switchPosition = intent.getBooleanExtra("suggestions", false);
+            mPublicSwitch.setChecked(suggestions_switchPosition);
         }
         else
         {
@@ -100,8 +103,8 @@ public class EditListActivity extends Activity
             public void onClick(View v)
             {
                 Intent resultIntent = new Intent();
-                resultIntent.putExtra("deleted", itemlistName);
-                setResult(RESULT_OK, resultIntent);
+                resultIntent.putExtra("deleted", originalItemlistName);
+                setResult(ItemlistActivity.EDITLIST_DELETED, resultIntent);
                 finish();
             }
         });
@@ -118,12 +121,32 @@ public class EditListActivity extends Activity
                     return;
                 }
                 Intent resultIntent = new Intent();
-                resultIntent.putExtra("newListTitle", mItemList_Name_EditText.getText().toString());
-                resultIntent.putExtra("icon", R.drawable.ic_crop_7_5_black_24dp); // TODO dont hardcode
-                resultIntent.putExtra("listPublic", mPublicSwitch.isChecked());
-                resultIntent.putExtra("edit", edited);
-                setResult(RESULT_OK, resultIntent);
-                finish();
+
+                if (mItemList_Name_EditText.getText().toString().trim().equals(originalItemlistName))
+                {
+                    return;
+                }
+                else if (originalItemlistName.equals(""))
+                {
+                    // A new list is created
+                    resultIntent.putExtra("newListTitle", mItemList_Name_EditText.getText().toString());
+                    resultIntent.putExtra("icon", R.drawable.ic_crop_7_5_black_24dp); // TODO don't hardcode
+                    resultIntent.putExtra("listPublic", mPublicSwitch.isChecked());
+                    resultIntent.putExtra("suggestions", mSuggestionSwitch.isChecked());
+                    setResult(ItemlistActivity.EDITLIST_NEWLIST, resultIntent);
+                    finish();
+                }
+                else
+                {
+                    // The list is edited
+                    resultIntent.putExtra("originalList", originalItemlistName);
+                    resultIntent.putExtra("newListTitle", mItemList_Name_EditText.getText().toString());
+                    resultIntent.putExtra("icon", R.drawable.ic_crop_7_5_black_24dp); // TODO don't hardcode
+                    resultIntent.putExtra("listPublic", mPublicSwitch.isChecked());
+                    resultIntent.putExtra("suggestions", mSuggestionSwitch.isChecked());
+                    setResult(ItemlistActivity.EDITLIST_EDITED, resultIntent);
+                    finish();
+                }
             }
         });
     }

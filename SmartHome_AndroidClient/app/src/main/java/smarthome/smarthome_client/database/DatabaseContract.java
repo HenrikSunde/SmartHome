@@ -19,7 +19,7 @@ public final class DatabaseContract
 
         // Table suggestions
         public static final String TABLE_SUGGESTIONS = "suggestions";
-        public static final String COLUMN_SUGGESTION_ITEMNAME = "name";
+        public static final String COLUMN_SUGGESTION_NAME = "name";
         public static final String COLUMN_SUGGESTION_LIST = "itemlist";
 
         // Table items
@@ -34,5 +34,6 @@ public final class DatabaseContract
         public static final String COLUMN_ITEMLIST_NAME = "name";
         public static final String COLUMN_ITEMLIST_ICON = "icon";
         public static final String COLUMN_ITEMLIST_PUBLIC = "publicList";
+        public static final String COLUMN_ITEMLIST_SUGGESTIONS = "suggestions";
     }
 }
