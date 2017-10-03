@@ -10,6 +10,7 @@ import android.util.Log;
 import smarthome.smarthome_client.arraylists.ItemArraylist;
 import smarthome.smarthome_client.database.DatabaseContract.DatabaseEntry;
 import smarthome.smarthome_client.database.interfaces.IDbHelper;
+import smarthome.smarthome_client.exceptions.NotImplementedException;
 import smarthome.smarthome_client.models.ItemlistItem;
 import smarthome.smarthome_client.models.ItemlistTitleItem;
 import smarthome.smarthome_client.models.Suggestion;
@@ -174,13 +175,20 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
                 , null
                 , null))
         {
-            cursor.moveToFirst();
-            int id = cursor.getInt(cursor.getColumnIndex(DatabaseEntry._ID));
-            String name = cursor.getString(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_NAME));
-            int icon = cursor.getInt(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_ICON));
-            boolean publicList = cursor.getInt(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_PUBLIC)) == 1;
-            boolean suggestions = cursor.getInt(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_SUGGESTIONS)) == 1;
-            return new ItemlistTitleItem(id, name, icon, publicList, suggestions);
+            try
+            {
+                cursor.moveToFirst();
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry._ID));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_NAME));
+                int icon = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_ICON));
+                boolean publicList = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_PUBLIC)) == 1;
+                boolean suggestions = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_SUGGESTIONS)) == 1;
+                return new ItemlistTitleItem(id, name, icon, publicList, suggestions);
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
     }
 
@@ -196,13 +204,20 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
                 , null
                 , null))
         {
-            cursor.moveToFirst();
-            int id = cursor.getInt(cursor.getColumnIndex(DatabaseEntry._ID));
-            String name = cursor.getString(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_NAME));
-            int icon = cursor.getInt(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_ICON));
-            boolean publicList = cursor.getInt(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_PUBLIC)) == 1;
-            boolean suggestions = cursor.getInt(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_SUGGESTIONS)) == 1;
-            return new ItemlistTitleItem(id, name, icon, publicList, suggestions);
+            try
+            {
+                cursor.moveToFirst();
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry._ID));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_NAME));
+                int icon = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_ICON));
+                boolean publicList = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_PUBLIC)) == 1;
+                boolean suggestions = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_SUGGESTIONS)) == 1;
+                return new ItemlistTitleItem(id, name, icon, publicList, suggestions);
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
     }
 
@@ -218,18 +233,26 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
                 , null
                 , null))
         {
-            cursor.moveToFirst();
-            ItemArraylist<ItemlistTitleItem> returnList = new ItemArraylist<>();
-            while (cursor.moveToNext())
+            try
             {
-                int id = cursor.getInt(cursor.getColumnIndex(DatabaseEntry._ID));
-                String name = cursor.getString(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_NAME));
-                int icon = cursor.getInt(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_ICON));
-                boolean publicList = cursor.getInt(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_PUBLIC)) == 1;
-                boolean suggestions = cursor.getInt(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEMLIST_SUGGESTIONS)) == 1;
-                returnList.add(new ItemlistTitleItem(id, name, icon, publicList, suggestions));
+                cursor.moveToFirst();
+                ItemArraylist<ItemlistTitleItem> returnList = new ItemArraylist<>();
+                while (!cursor.isAfterLast())
+                {
+                    int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry._ID));
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_NAME));
+                    int icon = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_ICON));
+                    boolean publicList = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_PUBLIC)) == 1;
+                    boolean suggestions = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEMLIST_SUGGESTIONS)) == 1;
+                    returnList.add(new ItemlistTitleItem(id, name, icon, publicList, suggestions));
+                    cursor.moveToNext();
+                }
+                return returnList;
             }
-            return returnList;
+            catch (Exception e)
+            {
+                return null;
+            }
         }
     }
 
@@ -250,14 +273,6 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
     }
 
     @Override
-    public void delete_itemlistTitleItem(ItemlistTitleItem item)
-    {
-        delete_suggestions(item.getId());
-        delete_itemlistItems(item.getId());
-        mDb.delete(DatabaseEntry.TABLE_ITEMLISTS, DatabaseEntry._ID + "=?", new String[]{ String.valueOf(item.getId()) });
-    }
-
-    @Override
     public void delete_itemlistTitleItems(ItemArraylist<ItemlistTitleItem> items)
     {
         for (ItemlistTitleItem item : items)
@@ -265,23 +280,6 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
             delete_suggestions(item.getId());
             delete_itemlistItems(item.getId());
             mDb.delete(DatabaseEntry.TABLE_ITEMLISTS, DatabaseEntry._ID + "=?", new String[]{ String.valueOf(item.getId()) });
-        }
-    }
-
-    @Override
-    public int get_itemlistItemCount(int list_id)
-    {
-        try (Cursor cursor = mDb.query(
-                DatabaseEntry.TABLE_ITEMS,
-                null,
-                DatabaseEntry.COLUMN_ITEM_LIST + "=?",
-                new String[]{ (String.valueOf(list_id)) },
-                null,
-                null,
-                null))
-        {
-            cursor.moveToFirst();
-            return cursor.getCount();
         }
     }
 
@@ -316,15 +314,49 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
                 , null
                 , null))
         {
-            cursor.moveToFirst();
-            ItemArraylist<Suggestion> returnList = new ItemArraylist<>();
-            while (cursor.moveToNext())
+            try
             {
-                int id = cursor.getInt(cursor.getColumnIndex(DatabaseEntry._ID));
-                String name = cursor.getString(cursor.getColumnIndex(DatabaseEntry.COLUMN_SUGGESTION_NAME));
-                returnList.add(new Suggestion(id, name, list_id));
+                cursor.moveToFirst();
+                ItemArraylist<Suggestion> returnList = new ItemArraylist<>();
+                while (!cursor.isAfterLast())
+                {
+                    int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry._ID));
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_SUGGESTION_NAME));
+                    returnList.add(new Suggestion(id, name, list_id));
+                    cursor.moveToNext();
+                }
+                return returnList;
             }
-            return returnList;
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+    }
+
+    @Override
+    public Suggestion get_suggestion(int list_id, String suggestionName)
+    {
+
+        try (Cursor cursor = mDb.query(
+                DatabaseEntry.TABLE_SUGGESTIONS
+                , null
+                , DatabaseEntry.COLUMN_SUGGESTION_LIST + "=? AND " + DatabaseEntry.COLUMN_SUGGESTION_NAME + "=?"
+                , new String[]{ String.valueOf(list_id), suggestionName }
+                , null
+                , null
+                , null))
+        {
+            try
+            {
+                cursor.moveToFirst();
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry._ID));
+                return new Suggestion(id, suggestionName, list_id);
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
     }
 
@@ -376,17 +408,52 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
                 , null
                 , null))
         {
-            cursor.moveToFirst();
-            ItemArraylist<ItemlistItem> returnList = new ItemArraylist<>();
-            while (cursor.moveToNext())
+            try
             {
-                int id = cursor.getInt(cursor.getColumnIndex(DatabaseEntry._ID));
-                String name = cursor.getString(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEM_NAME));
-                boolean marked = cursor.getInt(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEM_MARKED)) == 1;
-                String dateAdded = cursor.getString(cursor.getColumnIndex(DatabaseEntry.COLUMN_ITEM_DATEADDED));
-                returnList.add(new ItemlistItem(id, name, marked, dateAdded, list_id));
+                cursor.moveToFirst();
+                ItemArraylist<ItemlistItem> returnList = new ItemArraylist<>();
+                while (!cursor.isAfterLast())
+                {
+                    int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry._ID));
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEM_NAME));
+                    boolean marked = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEM_MARKED)) == 1;
+                    String dateAdded = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEM_DATEADDED));
+                    returnList.add(new ItemlistItem(id, name, marked, dateAdded, list_id));
+                    cursor.moveToNext();
+                }
+                return returnList;
             }
-            return returnList;
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+    }
+
+    @Override
+    public ItemlistItem get_itemlistItem(int list_id, String itemName)
+    {
+        try (Cursor cursor = mDb.query(
+                DatabaseEntry.TABLE_ITEMS
+                , null
+                , DatabaseEntry.COLUMN_ITEM_LIST + "=? AND " + DatabaseEntry.COLUMN_ITEM_NAME + "=?"
+                , new String[]{ String.valueOf(list_id), itemName }
+                , null
+                , null
+                , null))
+        {
+            try
+            {
+                cursor.moveToFirst();
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry._ID));
+                boolean marked = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEM_MARKED)) == 1;
+                String dateAdded = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseEntry.COLUMN_ITEM_DATEADDED));
+                return new ItemlistItem(id, itemName, marked, dateAdded, list_id);
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
     }
 
@@ -402,6 +469,30 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
         for (ItemlistItem item : items)
         {
             mDb.delete(DatabaseEntry.TABLE_SUGGESTIONS, DatabaseEntry._ID + "=?", new String[]{ String.valueOf(item.getList_id()) });
+        }
+    }
+
+    @Override
+    public int get_itemlistItemCount(int list_id)
+    {
+        try (Cursor cursor = mDb.query(
+                DatabaseEntry.TABLE_ITEMS,
+                null,
+                DatabaseEntry.COLUMN_ITEM_LIST + "=?",
+                new String[]{ (String.valueOf(list_id)) },
+                null,
+                null,
+                null))
+        {
+            try
+            {
+                cursor.moveToFirst();
+                return cursor.getCount();
+            }
+            catch (Exception e)
+            {
+                return 0;
+            }
         }
     }
 }

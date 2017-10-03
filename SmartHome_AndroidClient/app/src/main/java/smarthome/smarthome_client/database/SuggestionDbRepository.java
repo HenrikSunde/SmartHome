@@ -50,6 +50,17 @@ public class SuggestionDbRepository implements ISuggestionRepository
     }
 
     @Override
+    public Suggestion get(int list_id, String suggestionName)
+    {
+        try (SQLiteDatabase mDb = mDbHelper.getReadableDatabase())
+        {
+            mDbHelper.setDb(mDb);
+
+            return mDbHelper.get_suggestion(list_id, suggestionName);
+        }
+    }
+
+    @Override
     public void delete(int list_id)
     {
         try (SQLiteDatabase mDb = mDbHelper.getWritableDatabase())
@@ -58,6 +69,14 @@ public class SuggestionDbRepository implements ISuggestionRepository
 
             mDbHelper.delete_suggestions(list_id);
         }
+    }
+
+    @Override
+    public void delete(Suggestion suggestion)
+    {
+        ItemArraylist<Suggestion> suggestions = new ItemArraylist<>();
+        suggestions.add(suggestion);
+        delete(suggestions);
     }
 
     @Override

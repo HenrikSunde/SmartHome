@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filterable;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -60,6 +61,16 @@ public abstract class SmartHomeBaseAdapter<T extends NameableItem> extends BaseA
     public ItemArraylist<T> getList()
     {
         return mList;
+    }
+
+    public void setList(ItemArraylist<T> list)
+    {
+        clear();
+        for (T item : list)
+        {
+            mList.add(item);
+        }
+        Collections.sort(mList, mComparator);
     }
 
     public T getItem(String itemName)

@@ -1,6 +1,8 @@
 package smarthome.smarthome_client.models;
 
 
+import java.util.Locale;
+
 import smarthome.smarthome_client.models.interfaces.NameableItem;
 
 /***************************************************************************************************
@@ -17,6 +19,7 @@ public class ItemlistTitleItem implements NameableItem
 
     public ItemlistTitleItem(String name, int iconResourceID, boolean publicList, boolean suggestions, int count)
     {
+        this.id = -1;
         this.name = name;
         this.iconResourceID = iconResourceID;
         this.publicList = publicList;
@@ -93,5 +96,11 @@ public class ItemlistTitleItem implements NameableItem
     public void setCount(int count)
     {
         this.count = count;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format(Locale.getDefault(), "id=%d - name=%s - icon=%d - publicList=%s - suggestions=%s - count=%d", id, name, iconResourceID, publicList, suggestions, count);
     }
 }

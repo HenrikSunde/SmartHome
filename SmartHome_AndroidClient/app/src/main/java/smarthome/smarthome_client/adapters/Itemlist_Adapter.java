@@ -12,6 +12,7 @@ import android.widget.TextView;
 import java.util.Comparator;
 
 import smarthome.smarthome_client.R;
+import smarthome.smarthome_client.activity.application.itemlist.ItemlistActivity;
 import smarthome.smarthome_client.arraylists.ItemArraylist;
 import smarthome.smarthome_client.exceptions.NotImplementedException;
 import smarthome.smarthome_client.models.ItemlistItem;
@@ -22,10 +23,10 @@ import smarthome.smarthome_client.models.interfaces.NameableItem;
  **************************************************************************************************/
 public class Itemlist_Adapter extends SmartHomeBaseAdapter<ItemlistItem>
 {
-    private Activity mActivity;
+    private ItemlistActivity mActivity;
     private LayoutInflater mInflater;
 
-    public Itemlist_Adapter(Activity activity, ItemArraylist<ItemlistItem> list, Comparator<ItemlistItem> sortListWith_Comparator)
+    public Itemlist_Adapter(ItemlistActivity activity, ItemArraylist<ItemlistItem> list, Comparator<ItemlistItem> sortListWith_Comparator)
     {
         super(list, sortListWith_Comparator);
 
@@ -78,9 +79,8 @@ public class Itemlist_Adapter extends SmartHomeBaseAdapter<ItemlistItem>
                 ViewGroup parent = (ViewGroup) v.getParent();
                 TextView item_textView = (TextView) parent.findViewById(R.id.shoppinglist_item_name_textview);
 
-                String itemName = item_textView.getText().toString();
-                remove(itemName);
-                notifyDataSetChanged();
+                ItemlistItem item = getItem(item_textView.getText().toString());
+                mActivity.removeItemlistItem(item);
             }
         });
 

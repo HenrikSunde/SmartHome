@@ -50,6 +50,17 @@ public class ItemDbRepository implements IItemRepository
     }
 
     @Override
+    public ItemlistItem get(int list_id, String itemName)
+    {
+        try (SQLiteDatabase mDb = mDbHelper.getReadableDatabase())
+        {
+            mDbHelper.setDb(mDb);
+
+            return mDbHelper.get_itemlistItem(list_id, itemName);
+        }
+    }
+
+    @Override
     public void delete(int list_id)
     {
         try (SQLiteDatabase mDb = mDbHelper.getWritableDatabase())
@@ -61,6 +72,14 @@ public class ItemDbRepository implements IItemRepository
     }
 
     @Override
+    public void delete(ItemlistItem item)
+    {
+        ItemArraylist<ItemlistItem> items = new ItemArraylist<>();
+        items.add(item);
+        delete(items);
+    }
+
+    @Override
     public void delete(ItemArraylist<ItemlistItem> items)
     {
         try (SQLiteDatabase mDb = mDbHelper.getWritableDatabase())
@@ -68,6 +87,17 @@ public class ItemDbRepository implements IItemRepository
             mDbHelper.setDb(mDb);
 
             mDbHelper.delete_itemlistItems(items);
+        }
+    }
+
+    @Override
+    public int count(int list_id)
+    {
+        try (SQLiteDatabase mDb = mDbHelper.getWritableDatabase())
+        {
+            mDbHelper.setDb(mDb);
+
+            return mDbHelper.get_itemlistItemCount(list_id);
         }
     }
 }

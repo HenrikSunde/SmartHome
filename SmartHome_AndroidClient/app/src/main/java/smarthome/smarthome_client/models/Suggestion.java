@@ -1,5 +1,7 @@
 package smarthome.smarthome_client.models;
 
+import java.util.Locale;
+
 import smarthome.smarthome_client.models.interfaces.NameableItem;
 
 /***************************************************************************************************
@@ -51,5 +53,11 @@ public class Suggestion implements NameableItem
     public void setList_id(int list_id)
     {
         this.list_id = list_id;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format(Locale.getDefault(), "id=%d - name=%s - list_id=%d", id, name, list_id);
     }
 }

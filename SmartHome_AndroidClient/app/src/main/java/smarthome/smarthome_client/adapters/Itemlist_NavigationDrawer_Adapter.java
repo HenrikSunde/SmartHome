@@ -28,10 +28,10 @@ import static smarthome.smarthome_client.activity.application.itemlist.ItemlistA
  **************************************************************************************************/
 public class Itemlist_NavigationDrawer_Adapter extends SmartHomeBaseAdapter<ItemlistTitleItem>
 {
-    private Activity mActivity;
+    private ItemlistActivity mActivity;
     private LayoutInflater mInflater;
 
-    public Itemlist_NavigationDrawer_Adapter(Activity activity, ItemArraylist<ItemlistTitleItem> list, Comparator<ItemlistTitleItem> sortListWith_Comparator)
+    public Itemlist_NavigationDrawer_Adapter(ItemlistActivity activity, ItemArraylist<ItemlistTitleItem> list, Comparator<ItemlistTitleItem> sortListWith_Comparator)
     {
         super(list, sortListWith_Comparator);
         mActivity = activity;
@@ -70,12 +70,7 @@ public class Itemlist_NavigationDrawer_Adapter extends SmartHomeBaseAdapter<Item
             @Override
             public void onClick(View v)
             {
-                Intent editList_intent = new Intent(mActivity.getApplicationContext(), EditListActivity.class);
-                editList_intent.putExtra("edit", true);
-                editList_intent.putExtra("itemlistName", item.getName());
-                editList_intent.putExtra("icon", item.getIconResourceID());
-                editList_intent.putExtra("listPublic", item.isPublicList());
-                mActivity.startActivityForResult(editList_intent, EDITLISTACTIVITY_REQUESTCODE);
+                mActivity.onEditItemList(item.getName(), item.getIconResourceID(), item.isPublicList(), item.isSuggestions());
             }
         });
 

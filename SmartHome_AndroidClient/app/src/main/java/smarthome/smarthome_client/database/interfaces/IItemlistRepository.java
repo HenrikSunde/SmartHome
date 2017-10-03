@@ -17,5 +17,4 @@ public interface IItemlistRepository
     void update(ItemArraylist<ItemlistTitleItem> items);
     void delete(ItemlistTitleItem item);
     void delete(ItemArraylist<ItemlistTitleItem> items);
-    int count(int list_id);
 }

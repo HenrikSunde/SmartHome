@@ -99,6 +99,42 @@ public class Suggestion_Adapter extends SmartHomeBaseAdapter<Suggestion> impleme
     }
 
     @Override
+    public int getCount()
+    {
+        return mFullList != null ? mFullList.size() : super.getCount();
+    }
+
+    @Override
+    public Suggestion getItem(String itemName)
+    {
+        return mFullList != null ? mFullList.getItem(itemName) : super.getItem(itemName);
+    }
+
+    @Override
+    public int getPosition(String itemName)
+    {
+        return mFullList != null ? mFullList.getPosition(itemName) : super.getPosition(itemName);
+    }
+
+    @Override
+    public int getPosition(Suggestion item)
+    {
+        return mFullList != null ? mFullList.getPosition(item) : super.getPosition(item);
+    }
+
+    @Override
+    public Suggestion getItem(int position)
+    {
+        return mFullList != null ? mFullList.get(position) : super.getItem(position);
+    }
+
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
+    }
+
+    @Override
     public boolean contains(Suggestion item)
     {
         return mFullList != null ? mFullList.contains(item) : super.contains(item);
@@ -114,6 +150,24 @@ public class Suggestion_Adapter extends SmartHomeBaseAdapter<Suggestion> impleme
     public ItemArraylist<Suggestion> getList()
     {
         return mFullList != null ? mFullList : mFilteredList;
+    }
+
+    @Override
+    public void setList(ItemArraylist<Suggestion> list)
+    {
+        if (mFullList != null)
+        {
+            mFullList.clear();
+            for (Suggestion item : list)
+            {
+                mFullList.add(item);
+            }
+            Collections.sort(mFullList, mComparator);
+        }
+        else
+        {
+            super.setList(list);
+        }
     }
 
     @Override
@@ -156,9 +210,8 @@ public class Suggestion_Adapter extends SmartHomeBaseAdapter<Suggestion> impleme
                 ViewGroup parent = (ViewGroup) v.getParent();
                 TextView item_textView = (TextView) parent.findViewById(R.id.searchbar_item_name_textview);
 
-                String itemName = item_textView.getText().toString();
-                remove(itemName);
-                notifyDataSetChanged();
+                Suggestion suggestion = getItem(item_textView.getText().toString());
+                mActivity.removeSuggestion(suggestion);
 
                 // The TextView have to be updated for the adapter to work as intended. Don't know why, but it works.
                 // Set the cursor position after the TextView is refreshed

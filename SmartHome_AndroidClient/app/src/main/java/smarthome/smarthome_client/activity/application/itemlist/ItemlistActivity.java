@@ -77,7 +77,6 @@ public class ItemlistActivity extends Activity
     private TextView mActionBarTitle_TextView;
 
     // Navigation drawer
-    private ItemArraylist<ItemlistTitleItem> mAllItemlistTitleItems;
     private DrawerLayout mNavigationDrawerLayout;
     private RelativeLayout mNavigationDrawer;
     private ListView mNavigationDrawer_itemlists_listView;
@@ -85,10 +84,8 @@ public class ItemlistActivity extends Activity
 
     // Currently selected
     private ItemlistTitleItem mSelectedItemlistTitleItem;
-    private ItemArraylist<ItemlistItem> mSelectedItemlistItems;
-    private ItemArraylist<Suggestion> mSelectedSuggestions;
 
-
+    // Adapters
     private SmartHomeBaseAdapter<ItemlistTitleItem> mNavigationDrawerAdapter;
     private Suggestion_Adapter mSuggestionAdapter;
     private SmartHomeBaseAdapter<ItemlistItem> mItemlistAdapter;
@@ -120,17 +117,6 @@ public class ItemlistActivity extends Activity
         // SharedPreferences
         prefs = getPreferences(MODE_PRIVATE);
 
-        // Get the selected itemlist
-        String savedSelectedItemlistTitle = prefs.getString(getString(R.string.selectedItemList), "");
-        if (savedSelectedItemlistTitle.equals(""))
-        {
-            mSelectedItemlistTitleItem = new ItemlistTitleItem("", 0, false, false);
-        }
-        else
-        {
-            mSelectedItemlistTitleItem = mItemlistRepo.get(savedSelectedItemlistTitle);
-        }
-
 
         // Actionbar magic
         mActionBar = getActionBar();
@@ -147,7 +133,7 @@ public class ItemlistActivity extends Activity
 
         // Navigation drawer
         mNavigationDrawer_itemlists_listView = (ListView) findViewById(R.id.drawer_lists);
-        mAllItemlistTitleItems = new ItemArraylist<>();
+        ItemArraylist<ItemlistTitleItem> mAllItemlistTitleItems = new ItemArraylist<>();
         mNavigationDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mNavigationDrawer = (RelativeLayout) findViewById(R.id.right_drawer);
         mNavigationDrawerAdapter = new Itemlist_NavigationDrawer_Adapter(this, mAllItemlistTitleItems, mComparatorFactory.getTitleItemNameComparator(true));
@@ -158,7 +144,7 @@ public class ItemlistActivity extends Activity
 
         // Get the searchbar and populate the hint with the array of all shoppinglist items
         mItemlistSuggestionField_acTextView = (AutoCompleteTextView) findViewById(R.id.item_searchbar_textView);
-        mSelectedSuggestions = new ItemArraylist<>();
+        ItemArraylist<Suggestion> mSelectedSuggestions = new ItemArraylist<>();
         mSuggestionAdapter = new Suggestion_Adapter(this, mSelectedSuggestions, mComparatorFactory.getSuggestionNameComparator(true));
         mItemlistSuggestionField_acTextView.setAdapter(mSuggestionAdapter);
         mItemlistSuggestionField_acTextView.setThreshold(1);
@@ -167,15 +153,19 @@ public class ItemlistActivity extends Activity
 
         // Get the listview for the current shoppinglist and populate it with the shoppinglist array
         mItemlist_listView = (ListView) findViewById(R.id.shoppinglist_listview);
-        mSelectedItemlistItems = new ItemArraylist<>();
+        final ItemArraylist<ItemlistItem> mSelectedItemlistItems = new ItemArraylist<>();
         mItemlistAdapter = new Itemlist_Adapter(this, mSelectedItemlistItems, mComparatorFactory.getDateComparator(false));
         mItemlist_listView.setAdapter(mItemlistAdapter);
 
-        initiateButtonOnClickListeners();
-    }
 
-    private void initiateButtonOnClickListeners()
-    {
+        // Get the selected itemlist
+//        ItemArraylist<ItemlistTitleItem> allItemListsFromDb = mItemlistRepo.get();
+//        mNavigationDrawerAdapter.setList(allItemListsFromDb);
+//        mNavigationDrawerAdapter.notifyDataSetChanged();
+//        setSelectedItemlist(mItemlistRepo.get(getSelectedItemlistTitle()));
+//        updateUIForSelectedList();
+
+
         //
         findViewById(R.id.hide_keyboard_btn).setOnClickListener(new View.OnClickListener()
         {
@@ -201,32 +191,33 @@ public class ItemlistActivity extends Activity
                         if (which == DialogInterface.BUTTON_POSITIVE)
                         {
                             // Make an ArrayList with the items that should be removed (marked)
-                            ArrayList<String> removeTheseItems = new ArrayList<>();
-                            for (ItemlistItem item : mSelectedItemlistItems)
+                            ItemArraylist<ItemlistItem> removeTheseItems = new ItemArraylist<>();
+                            for (ItemlistItem item : mItemlistAdapter.getList())
                             {
                                 if (item.isMarked())
                                 {
-                                    removeTheseItems.add(item.getName());
+                                    removeTheseItems.add(item);
                                 }
                             }
 
                             // Remove the marked items
-                            for (String itemName : removeTheseItems)
+                            for (ItemlistItem itemName : removeTheseItems)
                             {
                                 mItemlistAdapter.remove(itemName);
                             }
-
-                            if (!removeTheseItems.isEmpty())
-                            {
-                                mItemlistAdapter.notifyDataSetChanged();
-                            }
+                            mItemlistAdapter.notifyDataSetChanged();
+                            mSelectedItemlistTitleItem.setCount(mItemlistAdapter.getCount());
+                            mNavigationDrawerAdapter.notifyDataSetChanged();
                         }
                     }
                 };
-                if (!mSelectedItemlistItems.isEmpty())
+                if (!mItemlistAdapter.getList().isEmpty())
                 {
-                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(v.getContext());
-                    alertBuilder.setMessage("Remove all marked items from the list?").setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener).show();
+                    new AlertDialog.Builder(v.getContext())
+                            .setMessage("Remove all marked items from the list?")
+                            .setPositiveButton("Yes", dialogClickListener)
+                            .setNegativeButton("No", dialogClickListener)
+                            .show();
                 }
             }
         });
@@ -246,13 +237,18 @@ public class ItemlistActivity extends Activity
                         {
                             mItemlistAdapter.clear();
                             mItemlistAdapter.notifyDataSetChanged();
+                            mSelectedItemlistTitleItem.setCount(mItemlistAdapter.getCount());
+                            mNavigationDrawerAdapter.notifyDataSetChanged();
                         }
                     }
                 };
                 if (!mItemlistAdapter.isEmpty())
                 {
-                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(v.getContext());
-                    alertBuilder.setMessage("Clear the list?").setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener).show();
+                    new AlertDialog.Builder(v.getContext())
+                            .setMessage("Clear the list?")
+                            .setPositiveButton("Yes", dialogClickListener)
+                            .setNegativeButton("No", dialogClickListener)
+                            .show();
                 }
             }
         });
@@ -325,8 +321,6 @@ public class ItemlistActivity extends Activity
     {
         Log.i(LOGTAG, "*** Start of onResume() ***");
         super.onResume();
-
-        updateSelectedLists();
     }
 
 
@@ -349,6 +343,13 @@ public class ItemlistActivity extends Activity
     {
         super.onStop();
         Log.i(LOGTAG, "*** Start of onStop() ***");
+
+        // Save selected lists in the database
+        saveSelectedLists();
+
+        prefEditor = prefs.edit();
+        prefEditor.putString(getString(R.string.selectedItemList), getSelectedItemlistTitle());
+        prefEditor.apply();
     }
 
 
@@ -362,6 +363,106 @@ public class ItemlistActivity extends Activity
         super.onDestroy();
 
         mDbHelper.close();
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        Log.i(LOGTAG, "In method onActivityResult()");
+        if (requestCode == EDITLISTACTIVITY_REQUESTCODE)
+        {
+            if (resultCode == EDITLIST_DELETED)
+            {
+                String deleteItemListTitle = data.getStringExtra("deleted");
+
+                ItemlistTitleItem deletedItem = mNavigationDrawerAdapter.getItem(deleteItemListTitle);
+                mItemlistRepo.delete(deletedItem);
+                mNavigationDrawerAdapter.remove(deletedItem);
+                mNavigationDrawerAdapter.notifyDataSetChanged();
+
+                updateUIForSelectedList();
+
+                Log.i(LOGTAG, "Itemlist deleted: " + deletedItem.toString());
+            }
+
+            else if (resultCode == EDITLIST_EDITED)
+            {
+                // Get values from the intent
+                String originalListName = data.getStringExtra("originalList");
+                String newListTitle = data.getStringExtra("newListTitle");
+                int icon = data.getIntExtra("icon", R.drawable.ic_crop_7_5_black_24dp);
+                boolean publicList = data.getBooleanExtra("listPublic", false);
+                boolean suggestions = data.getBooleanExtra("suggestions", false);
+
+                if (mNavigationDrawerAdapter.contains(newListTitle))
+                {
+                    onEditItemList(newListTitle, icon, publicList, suggestions);
+                    Toast.makeText(getApplicationContext(), newListTitle + " already exists", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Create a new item, add it or update the original item if it exists
+                ItemlistTitleItem originalItem = mNavigationDrawerAdapter.getItem(originalListName);
+                ItemlistTitleItem newItem = new ItemlistTitleItem(newListTitle, icon, publicList, suggestions);
+
+                mNavigationDrawerAdapter.editItem(originalItem, newItem);
+                mNavigationDrawerAdapter.notifyDataSetChanged();
+                mItemlistRepo.update(originalItem);
+
+                setSelectedItemlist(originalItem);
+                updateUIForSelectedList();
+
+                Log.i(LOGTAG, "Itemlist edited: " + originalItem.toString());
+            }
+
+            else if (resultCode == EDITLIST_NEWLIST)
+            {
+                // Get values from the intent
+                String newListTitle = data.getStringExtra("newListTitle");
+                int icon = data.getIntExtra("icon", R.drawable.ic_crop_7_5_black_24dp);
+                boolean publicList = data.getBooleanExtra("listPublic", false);
+                boolean suggestion = data.getBooleanExtra("suggestions", false);
+
+                if (mNavigationDrawerAdapter.contains(newListTitle))
+                {
+                    onCreateNewItemlist(getCurrentFocus());
+                    Toast.makeText(getApplicationContext(), newListTitle + " already exists", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Create a new item, add it
+                ItemlistTitleItem newItem = new ItemlistTitleItem(newListTitle, icon, publicList, suggestion);
+
+                mItemlistRepo.add(newItem);
+                newItem = mItemlistRepo.get(newItem.getName());
+                mNavigationDrawerAdapter.add(newItem);
+                mNavigationDrawerAdapter.notifyDataSetChanged();
+
+                setSelectedItemlist(newItem);
+                updateUIForSelectedList();
+
+                Log.i(LOGTAG, "New itemlist added: " + newItem.toString());
+            }
+        }
+    }
+
+
+
+    /**
+     * An item in the navigation drawer is clicked
+     */
+    public void onDrawerItemClick(int position)
+    {
+        Log.i(LOGTAG, "In method onDrawerItemClick()");
+
+        // Save selected lists in the database
+        saveSelectedLists();
+
+        ItemlistTitleItem selectedTitleItem = mNavigationDrawerAdapter.getItem(position);
+        setSelectedItemlist(selectedTitleItem);
+        updateUIForSelectedList();
+        mNavigationDrawer_itemlists_listView.setItemChecked(position, true);
     }
 
 
@@ -390,9 +491,10 @@ public class ItemlistActivity extends Activity
         {
             // Add the item as a suggested item
             Suggestion suggestion = new Suggestion(itemName, mSelectedItemlistTitleItem.getId());
-            mSuggestionRepo.add(suggestion);
             mSuggestionAdapter.add(suggestion);
             mSuggestionAdapter.notifyDataSetChanged();
+
+            Log.i(LOGTAG, "New suggestion added: " + suggestion.toString());
         }
 
         if (mItemlistAdapter.contains(itemName))
@@ -402,14 +504,53 @@ public class ItemlistActivity extends Activity
         else
         {
             // The item does not exist in the list, it should be added
-            ItemlistItem item = new ItemlistItem(itemName);
-            mItemRepo.add(item);
+            ItemlistItem item = new ItemlistItem(itemName, mSelectedItemlistTitleItem.getId());
             mItemlistAdapter.add(item);
+            mItemlistAdapter.notifyDataSetChanged();
+            mSelectedItemlistTitleItem.setCount(mItemlistAdapter.getCount());
             mNavigationDrawerAdapter.notifyDataSetChanged();
+
+            Log.i(LOGTAG, "New item added: " + item.toString());
         }
 
         setAutoCompleteTextViewText("");
     }
+
+
+    public void saveSelectedLists()
+    {
+        if (mSelectedItemlistTitleItem != null)
+        {
+            mSuggestionRepo.delete(mSelectedItemlistTitleItem.getId());
+            mSuggestionRepo.add(mSuggestionAdapter.getList());
+
+            mItemRepo.delete(mSelectedItemlistTitleItem.getId());
+            mItemRepo.add(mItemlistAdapter.getList());
+        }
+    }
+
+
+    public void updateUIForSelectedList()
+    {
+        mSuggestionAdapter.clear();
+        mItemlistAdapter.clear();
+
+        if (mNavigationDrawerAdapter.contains(mSelectedItemlistTitleItem) && mSelectedItemlistTitleItem != null)
+        {
+            // A list that has not been deleted is selected, get items from db
+            ItemArraylist<Suggestion> selectedSuggestions = mSuggestionRepo.get(mSelectedItemlistTitleItem.getId());
+            ItemArraylist<ItemlistItem> selectedItems = mItemRepo.get(mSelectedItemlistTitleItem.getId());
+            mSuggestionAdapter.setList(selectedSuggestions);
+            mItemlistAdapter.setList(selectedItems);
+
+            mSelectedItemlistTitleItem.setCount(mItemlistAdapter.getCount());
+            mNavigationDrawerAdapter.notifyDataSetChanged();
+        }
+
+        mSuggestionAdapter.notifyDataSetChanged();
+        mItemlistAdapter.notifyDataSetChanged();
+    }
+
 
 
     /**
@@ -420,50 +561,6 @@ public class ItemlistActivity extends Activity
         Log.i(LOGTAG, "In method onNavDrawerClick()");
     }
 
-
-    /**
-     * An item in the navigation drawer is clicked
-     */
-    public void onDrawerItemClick(int position)
-    {
-        Log.i(LOGTAG, "In method onDrawerItemClick()");
-
-        if (mSelectedItemlistTitleItem != null && mItemlistRepo.get(mSelectedItemlistTitleItem.getId()) != null)
-        {
-            // If a list is selected, and the selected list is already in the db
-            // Delete selected lists from db
-            mSuggestionRepo.delete(mSelectedItemlistTitleItem.getId());
-            mItemRepo.delete(mSelectedItemlistTitleItem.getId());
-
-            // Save selected lists to db
-            mSuggestionRepo.add(mSelectedSuggestions);
-            mItemRepo.add(mSelectedItemlistItems);
-        }
-
-        if (position < 0)
-        {
-            // No list is selected
-            setSelectedItemlistTitle(null);
-        }
-        else
-        {
-            // A list is selected
-            setSelectedItemlistTitle(mNavigationDrawerAdapter.getItem(position));
-            if (mItemlistRepo.get(mSelectedItemlistTitleItem.getName()) == null)
-            {
-                // If the list does not exist in the database, add it
-                mItemlistRepo.add(mSelectedItemlistTitleItem);
-            }
-            else
-            {
-                // If the list exists in the database, update it
-                mItemlistRepo.update(mSelectedItemlistTitleItem);
-            }
-        }
-        mNavigationDrawer_itemlists_listView.setItemChecked(position, true);
-
-        updateSelectedLists();
-    }
 
 
     /**
@@ -476,131 +573,69 @@ public class ItemlistActivity extends Activity
         startActivityForResult(editList_intent, EDITLISTACTIVITY_REQUESTCODE);
     }
 
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    /**
+     * When a list should be edited
+     * */
+    public void onEditItemList(String listTitle, int icon, boolean publicList, boolean suggestions)
     {
-        Log.i(LOGTAG, "In method onActivityResult()");
-        if (requestCode == EDITLISTACTIVITY_REQUESTCODE)
-        {
-            if (resultCode == EDITLIST_DELETED)
-            {
-                String delete = data.getStringExtra("deleted");
-                mItemlistRepo.delete(mItemlistRepo.get(delete));
-                onDrawerItemClick(-1);
-            }
-
-            else if (resultCode == EDITLIST_EDITED)
-            {
-                // Get values from the intent
-                String originalListName = data.getStringExtra("originalList");
-                String newListTitle = data.getStringExtra("newListTitle");
-                int icon = data.getIntExtra("icon", R.drawable.ic_crop_7_5_black_24dp);
-                boolean publicList = data.getBooleanExtra("listPublic", false);
-                boolean suggestion = data.getBooleanExtra("suggestions", false);
-
-                if (mNavigationDrawerAdapter.contains(newListTitle))
-                {
-                    Toast.makeText(getApplicationContext(), newListTitle + " already exists", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // Create a new item, add it or update the original item if it exists
-                ItemlistTitleItem originalItem = mNavigationDrawerAdapter.getItem(originalListName);
-                ItemlistTitleItem newItem = new ItemlistTitleItem(newListTitle, icon, publicList, suggestion);
-
-                mNavigationDrawerAdapter.editItem(originalItem, newItem);
-
-                onDrawerItemClick(mNavigationDrawerAdapter.getPosition(newItem));
-            }
-
-            else if (resultCode == EDITLIST_NEWLIST)
-            {
-                // Get values from the intent
-                String newListTitle = data.getStringExtra("newListTitle");
-                int icon = data.getIntExtra("icon", R.drawable.ic_crop_7_5_black_24dp);
-                boolean publicList = data.getBooleanExtra("listPublic", false);
-                boolean suggestion = data.getBooleanExtra("suggestions", false);
-
-                if (mNavigationDrawerAdapter.contains(newListTitle))
-                {
-                    Toast.makeText(getApplicationContext(), newListTitle + " already exists", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // Create a new item, add it
-                ItemlistTitleItem newItem = new ItemlistTitleItem(newListTitle, icon, publicList, suggestion);
-                mNavigationDrawerAdapter.add(newItem);
-                mNavigationDrawerAdapter.notifyDataSetChanged();
-
-                onDrawerItemClick(mNavigationDrawerAdapter.getPosition(newItem));
-            }
-        }
+        Log.i(LOGTAG, "In method onEditItemList()");
+        Intent editList_intent = new Intent(getApplicationContext(), EditListActivity.class);
+        editList_intent.putExtra("edit", true);
+        editList_intent.putExtra("itemlistName", listTitle);
+        editList_intent.putExtra("icon", icon);
+        editList_intent.putExtra("listPublic", publicList);
+        editList_intent.putExtra("suggestions", suggestions);
+        startActivityForResult(editList_intent, EDITLISTACTIVITY_REQUESTCODE);
     }
 
 
-    public void updateSelectedLists()
+    public String getActionBarTitleText()
     {
-        int selectedListId = -1;
-        if (mSelectedItemlistTitleItem != null)
-        {
-            selectedListId = mSelectedItemlistTitleItem.getId();
-        }
-
-        // Clear the adapters
-        mItemlistAdapter.clear();
-        mSuggestionAdapter.clear();
-        mItemlistAdapter.clear();
-
-        ItemArraylist<ItemlistTitleItem> titleItems = mItemlistRepo.get();
-        if (titleItems != null)
-        {
-            for (ItemlistTitleItem titleItem : titleItems)
-            {
-                titleItem.setCount(mItemlistRepo.count(titleItem.getId()));
-                mNavigationDrawerAdapter.add(titleItem);
-            }
-        }
-
-        if (selectedListId > 0)
-        {
-            for (Suggestion suggestion : mSuggestionRepo.get(selectedListId))
-            {
-                mSuggestionAdapter.add(suggestion);
-            }
-
-            for (ItemlistItem item : mItemRepo.get(selectedListId))
-            {
-                mItemlistAdapter.add(item);
-            }
-        }
-
-        // Notify the adapters to update the UI
-        mNavigationDrawerAdapter.notifyDataSetChanged();
-        mSuggestionAdapter.notifyDataSetChanged();
-        mItemlistAdapter.notifyDataSetChanged();
+        return mActionBarTitle_TextView.getText().toString();
     }
-
 
     public String getSelectedItemlistTitle()
     {
-        return mSelectedItemlistTitleItem.getName();
+        if (mSelectedItemlistTitleItem != null)
+        {
+            return mSelectedItemlistTitleItem.getName();
+        }
+        return "";
     }
 
-    public void setSelectedItemlistTitle(ItemlistTitleItem titleItem)
+    public void setSelectedItemlist(ItemlistTitleItem titleItem)
     {
         mSelectedItemlistTitleItem = titleItem;
-        mActionBarTitle_TextView.setText(getSelectedItemlistTitle());
-
-        prefEditor = prefs.edit();
-        prefEditor.putString(getString(R.string.selectedItemList), getSelectedItemlistTitle());
-        prefEditor.apply();
+        if (titleItem == null)
+        {
+            // No list is selected
+            mActionBarTitle_TextView.setText("");
+        }
+        else
+        {
+            // A list is selected
+            mActionBarTitle_TextView.setText(getSelectedItemlistTitle());
+        }
     }
 
 
     public void setAutoCompleteTextViewText(String text)
     {
         mItemlistSuggestionField_acTextView.setText(text);
+    }
+
+    public void removeSuggestion(Suggestion suggestion)
+    {
+        mSuggestionAdapter.remove(suggestion);
+        mSuggestionAdapter.notifyDataSetChanged();
+        mSuggestionRepo.delete(suggestion);
+    }
+
+    public void removeItemlistItem(ItemlistItem item)
+    {
+        mItemlistAdapter.remove(item);
+        mItemlistAdapter.notifyDataSetChanged();
+        mItemRepo.delete(item);
     }
 
 

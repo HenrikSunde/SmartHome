@@ -94,12 +94,9 @@ public class ItemlistDbRepository implements IItemlistRepository
     @Override
     public void delete(ItemlistTitleItem item)
     {
-        try (SQLiteDatabase mDb = mDbHelper.getWritableDatabase())
-        {
-            mDbHelper.setDb(mDb);
-
-            mDbHelper.delete_itemlistTitleItem(item);
-        }
+        ItemArraylist<ItemlistTitleItem> items = new ItemArraylist<>();
+        items.add(item);
+        delete(items);
     }
 
     @Override
@@ -110,17 +107,6 @@ public class ItemlistDbRepository implements IItemlistRepository
             mDbHelper.setDb(mDb);
 
             mDbHelper.delete_itemlistTitleItems(items);
-        }
-    }
-
-    @Override
-    public int count(int list_id)
-    {
-        try (SQLiteDatabase mDb = mDbHelper.getWritableDatabase())
-        {
-            mDbHelper.setDb(mDb);
-
-            return mDbHelper.get_itemlistItemCount(list_id);
         }
     }
 }

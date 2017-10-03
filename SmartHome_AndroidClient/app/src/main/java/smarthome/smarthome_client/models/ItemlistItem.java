@@ -1,6 +1,7 @@
 package smarthome.smarthome_client.models;
 
 import java.util.Date;
+import java.util.Locale;
 
 import smarthome.smarthome_client.models.interfaces.NameableItem;
 
@@ -17,33 +18,23 @@ public class ItemlistItem implements NameableItem
     private String dateAddedFormatted;
     private int list_id;
 
-    public ItemlistItem(String name)
-    {
-        this(-1, name, -1);
-    }
-
-    public ItemlistItem(int id, String name, int list_id)
-    {
-        this(id, name, false, list_id);
-    }
-
-    public ItemlistItem(int id, String name, boolean marked, int list_id)
-    {
-        this(id, name, marked, new Date(), list_id);
-    }
-
-    public ItemlistItem(int id, String name, boolean marked, Date addDate, int list_id)
+    // Constructor for items that are created right now
+    public ItemlistItem(String name, int list_id)
     {
         this.name = name;
-        this.marked = marked;
-        dateAddedFormatted = dateToDateFormat(addDate);
+        this.marked = false;
+        this.dateAddedFormatted = dateToDateFormat(new Date());
+        this.list_id = list_id;
     }
 
+    // Constructor for items that already exist somewhere (e.g. database)
     public ItemlistItem(int id, String name, boolean marked, String dateAddedFormatted, int list_id)
     {
+        this.id = id;
         this.name = name;
         this.marked = marked;
         this.dateAddedFormatted = dateAddedFormatted;
+        this.list_id = list_id;
     }
 
     public int getId()
@@ -99,6 +90,6 @@ public class ItemlistItem implements NameableItem
     @Override
     public String toString()
     {
-        return name + ", marked=" + marked + " - added=" + dateAddedFormatted;
+        return String.format(Locale.getDefault(), "id=%d - name=%s - marked=%s - dateAdded=%s - list_id=%d", id, name, marked, dateAddedFormatted, list_id);
     }
 }
