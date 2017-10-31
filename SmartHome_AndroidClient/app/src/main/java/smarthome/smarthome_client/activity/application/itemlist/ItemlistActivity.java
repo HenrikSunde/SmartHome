@@ -158,12 +158,18 @@ public class ItemlistActivity extends Activity
         mItemlist_listView.setAdapter(mItemlistAdapter);
 
 
-        // Get the selected itemlist
-//        ItemArraylist<ItemlistTitleItem> allItemListsFromDb = mItemlistRepo.get();
-//        mNavigationDrawerAdapter.setList(allItemListsFromDb);
-//        mNavigationDrawerAdapter.notifyDataSetChanged();
-//        setSelectedItemlist(mItemlistRepo.get(getSelectedItemlistTitle()));
-//        updateUIForSelectedList();
+        // Get the selected itemlist if there is one
+        ItemArraylist<ItemlistTitleItem> dbItemlistTitleItems = mItemlistRepo.get();
+        mNavigationDrawerAdapter.setList(dbItemlistTitleItems);
+
+        for (ItemlistTitleItem item : dbItemlistTitleItems)
+        {
+            onDrawerItemClick(mNavigationDrawerAdapter.getPosition(item));
+        }
+
+        mNavigationDrawerAdapter.notifyDataSetChanged();
+        setSelectedItemlist(mItemlistRepo.get(prefs.getString(getString(R.string.selectedItemList), "")));
+        updateUIForSelectedList();
 
 
         //
@@ -462,7 +468,6 @@ public class ItemlistActivity extends Activity
         ItemlistTitleItem selectedTitleItem = mNavigationDrawerAdapter.getItem(position);
         setSelectedItemlist(selectedTitleItem);
         updateUIForSelectedList();
-        mNavigationDrawer_itemlists_listView.setItemChecked(position, true);
     }
 
 
@@ -535,7 +540,7 @@ public class ItemlistActivity extends Activity
         mSuggestionAdapter.clear();
         mItemlistAdapter.clear();
 
-        if (mNavigationDrawerAdapter.contains(mSelectedItemlistTitleItem) && mSelectedItemlistTitleItem != null)
+        if (mNavigationDrawerAdapter.contains(mSelectedItemlistTitleItem))
         {
             // A list that has not been deleted is selected, get items from db
             ItemArraylist<Suggestion> selectedSuggestions = mSuggestionRepo.get(mSelectedItemlistTitleItem.getId());
@@ -545,10 +550,13 @@ public class ItemlistActivity extends Activity
 
             mSelectedItemlistTitleItem.setCount(mItemlistAdapter.getCount());
             mNavigationDrawerAdapter.notifyDataSetChanged();
+            int position = mNavigationDrawerAdapter.getPosition(mSelectedItemlistTitleItem);
+            mNavigationDrawer_itemlists_listView.setItemChecked(position, true);
         }
 
         mSuggestionAdapter.notifyDataSetChanged();
         mItemlistAdapter.notifyDataSetChanged();
+        mNavigationDrawerAdapter.notifyDataSetChanged();
     }
 
 

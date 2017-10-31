@@ -258,6 +258,10 @@ public class Suggestion_Adapter extends SmartHomeBaseAdapter<Suggestion> impleme
             {
                 mFullList = new ItemArraylist<>(mFilteredList);
             }
+            else
+            {
+                mFullList = null;
+            }
 
             if (constraint == null || constraint.length() == 0)
             {

@@ -363,7 +363,10 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
     @Override
     public void delete_suggestions(int list_id)
     {
-        mDb.delete(DatabaseEntry.TABLE_SUGGESTIONS, DatabaseEntry._ID + "=?", new String[]{ String.valueOf(list_id) });
+        mDb.delete(
+                DatabaseEntry.TABLE_SUGGESTIONS
+                , DatabaseEntry.COLUMN_SUGGESTION_LIST + "=?"
+                , new String[]{ String.valueOf(list_id) });
     }
 
     @Override
@@ -371,7 +374,10 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
     {
         for (Suggestion suggestion : suggestions)
         {
-            mDb.delete(DatabaseEntry.TABLE_SUGGESTIONS, DatabaseEntry._ID + "=?", new String[]{ String.valueOf(suggestion.getList_id()) });
+            mDb.delete(
+                    DatabaseEntry.TABLE_SUGGESTIONS
+                    , DatabaseEntry.COLUMN_SUGGESTION_LIST + "=?"
+                    , new String[]{ String.valueOf(suggestion.getList_id()) });
         }
     }
 
@@ -460,7 +466,9 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
     @Override
     public void delete_itemlistItems(int list_id)
     {
-        mDb.delete(DatabaseEntry.TABLE_ITEMS, DatabaseEntry._ID + "=?", new String[]{ String.valueOf(list_id) });
+        mDb.delete(DatabaseEntry.TABLE_ITEMS
+                , DatabaseEntry.COLUMN_ITEM_LIST + "=?"
+                , new String[]{ String.valueOf(list_id) });
     }
 
     @Override
@@ -468,7 +476,9 @@ public class DbHelper extends SQLiteOpenHelper implements IDbHelper
     {
         for (ItemlistItem item : items)
         {
-            mDb.delete(DatabaseEntry.TABLE_SUGGESTIONS, DatabaseEntry._ID + "=?", new String[]{ String.valueOf(item.getList_id()) });
+            mDb.delete(DatabaseEntry.TABLE_ITEMS
+                    , DatabaseEntry.COLUMN_ITEM_LIST + "=?"
+                    , new String[]{ String.valueOf(item.getList_id()) });
         }
     }
 

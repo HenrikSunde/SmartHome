@@ -56,6 +56,13 @@ public class ItemlistDbRepositoryTest
 
 
     @Test
+    public void alwaysPass() throws Exception
+    {
+        assertTrue(true);
+    }
+
+
+    @Test
     public void test_add_itemlistTitleItem()
     {
         ItemlistTitleItem item = new ItemlistTitleItem("TestItem", 0, false, false, 0);
@@ -72,22 +79,6 @@ public class ItemlistDbRepositoryTest
         assertEquals(item.getCount(), dbItem.getCount());
         assertEquals(-1, item.getId());
         assertTrue(dbItem.getId() > 0);
-    }
-
-    @Test
-    public void test_add_itemlistTitleItems()
-    {
-        ItemArraylist<ItemlistTitleItem> items = new ItemArraylist<>();
-        items.add(new ItemlistTitleItem("TestItem1", 0, false, false, 0));
-        items.add(new ItemlistTitleItem("TestItem2", 0, false, false, 0));
-        items.add(new ItemlistTitleItem("TestItem3", 0, false, false, 0));
-
-        itemlistRepo.add(items);
-
-        ItemArraylist<ItemlistTitleItem> dbItems = itemlistRepo.get();
-
-        assertNotNull(dbItems);
-        assertEquals(items.size(), dbItems.size());
     }
 
     @Test

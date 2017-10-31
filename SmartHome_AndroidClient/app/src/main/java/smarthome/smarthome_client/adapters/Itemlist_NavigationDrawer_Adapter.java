@@ -38,6 +38,19 @@ public class Itemlist_NavigationDrawer_Adapter extends SmartHomeBaseAdapter<Item
         mInflater = LayoutInflater.from(activity.getApplicationContext());
     }
 
+    @Override
+    public boolean contains(ItemlistTitleItem item)
+    {
+        for (ItemlistTitleItem titleItem : getList())
+        {
+            if (titleItem.getId() == item.getId())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void editItem(ItemlistTitleItem originalItem, ItemlistTitleItem newItem)
     {
         originalItem.setName(newItem.getName());
